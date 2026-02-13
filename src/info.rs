@@ -59,7 +59,7 @@ impl StatusInfo {
         let hostname = hostname();
         let (cwd, cwd_basename) = cwd_info();
         let (git_branch, git_dirty) = git_info();
-        let time = current_time();
+        let time = current_time("%H:%M:%S");
 
         Self {
             user,
@@ -97,9 +97,11 @@ impl StatusInfo {
 }
 
 /// Resolve special value tokens:
-///   @model     -> pretty model from stdin JSON (e.g. "Opus 4.6")
-///   @model-id  -> raw model ID from stdin JSON (e.g. "claude-opus-4-6")
-///   plain text -> used as-is
+///   @model        -> pretty model from stdin JSON (e.g. "Opus 4.6")
+///   @model-id     -> raw model ID from stdin JSON (e.g. "claude-opus-4-6")
+///   @time         -> current time in default format (HH:MM:SS)
+///   @time:FORMAT  -> current time with custom strftime format (e.g. @time:%I:%M %p)
+///   plain text    -> used as-is
 fn resolve_value(val: &str, stdin: &Option<StdinData>) -> String {
     match val {
         "@model" => {
@@ -120,6 +122,11 @@ fn resolve_value(val: &str, stdin: &Option<StdinData>) -> String {
                 }
             }
             "unknown".to_string()
+        }
+        "@time" => current_time("%H:%M:%S"),
+        _ if val.starts_with("@time:") => {
+            let fmt = &val["@time:".len()..];
+            current_time(fmt)
         }
         _ => val.to_string(),
     }
@@ -222,9 +229,9 @@ fn git_info() -> (Option<String>, Option<bool>) {
     (branch, dirty)
 }
 
-fn current_time() -> String {
+fn current_time(fmt: &str) -> String {
     let output = Command::new("date")
-        .arg("+%H:%M:%S")
+        .arg(format!("+{}", fmt))
         .output()
         .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string());

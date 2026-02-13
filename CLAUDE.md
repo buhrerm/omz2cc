@@ -30,6 +30,8 @@ Override any theme field with `--set key=value`. Special values:
 
 - `@model` — pretty model name from Claude Code stdin JSON (e.g. "Opus 4.6")
 - `@model-id` — raw model ID from stdin JSON (e.g. "claude-opus-4-6")
+- `@time` — current time in default 24h format (HH:MM:SS)
+- `@time:FORMAT` — current time with custom strftime format (e.g. `@time:%I:%M %p` for 12-hour)
 
 Requires `--stdin` flag when using `@model` or `@model-id` (reads Claude Code JSON from stdin).
 
