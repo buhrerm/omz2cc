@@ -1,8 +1,10 @@
 mod color;
+mod config;
 mod info;
 mod themes;
 
 use clap::Parser;
+use config::{load_mappings, merge_mappings};
 use info::{StdinData, StatusInfo};
 use themes::{all_themes, get_theme};
 
@@ -24,10 +26,19 @@ struct Cli {
     /// Read Claude Code JSON from stdin (provides @model, @model-id)
     #[arg(long)]
     stdin: bool,
+
+    /// Initialize default mappings config at ~/.config/omz2cc/mappings.conf
+    #[arg(long)]
+    init: bool,
 }
 
 fn main() {
     let cli = Cli::parse();
+
+    if cli.init {
+        init_config();
+        return;
+    }
 
     if cli.list {
         for theme in all_themes() {
@@ -57,8 +68,12 @@ fn main() {
         None
     };
 
+    // Load mappings from config file, merge with CLI --set overrides
+    let config_mappings = load_mappings();
+    let all_overrides = merge_mappings(config_mappings, &cli.set);
+
     let mut info = StatusInfo::gather();
-    info.apply_overrides(&cli.set, &stdin_data);
+    info.apply_overrides(&all_overrides, &stdin_data);
     println!("{}", theme.format(&info));
 }
 
@@ -80,4 +95,47 @@ fn detect_theme_from_zshrc() -> Option<String> {
         }
     }
     theme
+}
+
+fn init_config() {
+    let dir = config::config_dir();
+    let path = format!("{}/mappings.conf", dir);
+
+    if std::path::Path::new(&path).exists() {
+        eprintln!("Config already exists: {}", path);
+        eprintln!("Edit it directly or delete it to re-initialize.");
+        return;
+    }
+
+    if let Err(e) = std::fs::create_dir_all(&dir) {
+        eprintln!("Failed to create config directory: {}", e);
+        std::process::exit(1);
+    }
+
+    let default_config = r#"# omz2cc field mappings
+# Format: field=value
+#
+# Fields: user, hostname, cwd, git_branch, time
+#
+# Special values:
+#   @model       — Claude Code model name (e.g. "Opus 4.6"), requires --stdin
+#   @model-id    — raw model ID (e.g. "claude-opus-4-6"), requires --stdin
+#   @time        — current time (HH:MM:SS)
+#   @time:FORMAT — custom strftime format (e.g. @time:%I:%M %p)
+#
+# CLI --set overrides take precedence over these mappings.
+#
+# Examples:
+# user=@model
+# hostname=myhost
+# time=@time:%I:%M %p
+"#;
+
+    if let Err(e) = std::fs::write(&path, default_config) {
+        eprintln!("Failed to write config: {}", e);
+        std::process::exit(1);
+    }
+
+    println!("Created {}", path);
+    println!("Edit this file to configure persistent field mappings.");
 }
