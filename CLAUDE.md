@@ -13,7 +13,7 @@ cargo build
 To test visually, the omz2cc command is configured as the **second line** in ccstatusline:
 
 - Config: `~/.config/ccstatusline/settings.json`
-- Line 2 runs: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --stdin --set user=@model`
+- Line 2 runs: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --set user=@model`
 - The widget must have `"preserveColors": true` so ccstatusline passes through ANSI color codes from omz2cc instead of stripping them.
 
 After building, the status line in Claude Code should update to show the omz2cc output with colors. Verify it looks correct there rather than just checking stdout.
@@ -39,7 +39,7 @@ Override any theme field with `--set key=value`. Special values:
 - `@time` — current time in default 24h format (HH:MM:SS)
 - `@time:FORMAT` — current time with custom strftime format (e.g. `@time:%I:%M %p` for 12-hour)
 
-Requires `--stdin` flag when using `@model` or `@model-id` (reads Claude Code JSON from stdin).
+Stdin JSON from Claude Code is read automatically when piped (no flag needed).
 
 Overridable fields: `user`, `hostname`, `cwd`, `git_branch`, `time`.
 
