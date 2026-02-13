@@ -43,10 +43,15 @@ fn extract_json_string(json: &str, key: &str) -> Option<String> {
 pub struct StatusInfo {
     pub user: String,
     pub hostname: String,
+    pub short_hostname: String,
     pub cwd: String,
     pub cwd_basename: String,
     pub git_branch: Option<String>,
     pub git_dirty: Option<bool>,
+    pub git_ahead: Option<i32>,
+    pub git_behind: Option<i32>,
+    pub git_action: Option<String>,
+    pub exit_code: i32,
     pub time: String,
 }
 
@@ -57,17 +62,28 @@ impl StatusInfo {
             .unwrap_or_else(|_| String::from("unknown"));
 
         let hostname = hostname();
+        let short_hostname = hostname
+            .split('.')
+            .next()
+            .unwrap_or(&hostname)
+            .to_string();
         let (cwd, cwd_basename) = cwd_info();
         let (git_branch, git_dirty) = git_info();
-        let time = current_time();
+        let git_action = git_action();
+        let time = current_time("%H:%M:%S");
 
         Self {
             user,
             hostname,
+            short_hostname,
             cwd,
             cwd_basename,
             git_branch,
             git_dirty,
+            git_ahead: None,
+            git_behind: None,
+            git_action,
+            exit_code: 0,
             time,
         }
     }
@@ -97,9 +113,11 @@ impl StatusInfo {
 }
 
 /// Resolve special value tokens:
-///   @model     -> pretty model from stdin JSON (e.g. "Opus 4.6")
-///   @model-id  -> raw model ID from stdin JSON (e.g. "claude-opus-4-6")
-///   plain text -> used as-is
+///   @model        -> pretty model from stdin JSON (e.g. "Opus 4.6")
+///   @model-id     -> raw model ID from stdin JSON (e.g. "claude-opus-4-6")
+///   @time         -> current time in default format (HH:MM:SS)
+///   @time:FORMAT  -> current time with custom strftime format (e.g. @time:%I:%M %p)
+///   plain text    -> used as-is
 fn resolve_value(val: &str, stdin: &Option<StdinData>) -> String {
     match val {
         "@model" => {
@@ -120,6 +138,11 @@ fn resolve_value(val: &str, stdin: &Option<StdinData>) -> String {
                 }
             }
             "unknown".to_string()
+        }
+        "@time" => current_time("%H:%M:%S"),
+        _ if val.starts_with("@time:") => {
+            let fmt = &val["@time:".len()..];
+            current_time(fmt)
         }
         _ => val.to_string(),
     }
@@ -222,9 +245,31 @@ fn git_info() -> (Option<String>, Option<bool>) {
     (branch, dirty)
 }
 
-fn current_time() -> String {
+fn git_action() -> Option<String> {
+    let git_dir = Command::new("git")
+        .args(["rev-parse", "--git-dir"])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())?;
+
+    let path = std::path::Path::new(&git_dir);
+    if path.join("rebase-merge").exists() || path.join("rebase-apply").exists() {
+        Some("rebase".to_string())
+    } else if path.join("MERGE_HEAD").exists() {
+        Some("merge".to_string())
+    } else if path.join("CHERRY_PICK_HEAD").exists() {
+        Some("cherry-pick".to_string())
+    } else if path.join("BISECT_LOG").exists() {
+        Some("bisect".to_string())
+    } else {
+        None
+    }
+}
+
+fn current_time(fmt: &str) -> String {
     let output = Command::new("date")
-        .arg("+%H:%M:%S")
+        .arg(format!("+{}", fmt))
         .output()
         .ok()
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string());

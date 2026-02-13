@@ -1,4 +1,4 @@
-use crate::color::*;
+use crate::color::{self, Color};
 use crate::info::StatusInfo;
 use crate::themes::Theme;
 
@@ -13,20 +13,20 @@ impl Theme for Agnoster {
     fn format(&self, info: &StatusInfo) -> String {
         let mut s = format!(
             "{} {}",
-            colored(&format!("{}@{}", info.user, info.hostname), WHITE),
-            bold(&info.cwd, BLUE),
+            color::colored(&format!("{}@{}", info.user, info.hostname), Color::White),
+            color::bold(&info.cwd, Color::Blue),
         );
 
         if let Some(ref branch) = info.git_branch {
             let (sym, clr) = if info.git_dirty == Some(true) {
-                (" ✗", YELLOW)
+                (" ✗", Color::Yellow)
             } else {
-                (" ✓", GREEN)
+                (" ✓", Color::Green)
             };
             s.push_str(&format!(
                 "  {}{}",
-                colored(branch, WHITE),
-                colored(sym, clr),
+                color::colored(branch, Color::White),
+                color::colored(sym, clr),
             ));
         }
 

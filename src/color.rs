@@ -3,19 +3,56 @@
 pub const RESET: &str = "\x1b[0m";
 pub const BOLD: &str = "\x1b[1m";
 
-pub const RED: &str = "\x1b[31m";
-pub const GREEN: &str = "\x1b[32m";
-pub const YELLOW: &str = "\x1b[33m";
-pub const BLUE: &str = "\x1b[34m";
-pub const MAGENTA: &str = "\x1b[35m";
-pub const CYAN: &str = "\x1b[36m";
-pub const WHITE: &str = "\x1b[37m";
-pub const GRAY: &str = "\x1b[90m";
-
-pub fn colored(text: &str, color: &str) -> String {
-    format!("{}{}{}", color, text, RESET)
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Color {
+    Black,
+    Red,
+    Green,
+    Yellow,
+    Blue,
+    Magenta,
+    Cyan,
+    White,
+    Gray,
+    BrightRed,
+    BrightGreen,
+    BrightYellow,
+    BrightBlue,
+    BrightMagenta,
+    BrightCyan,
+    BrightWhite,
+    Color256(u8),
 }
 
-pub fn bold(text: &str, color: &str) -> String {
-    format!("{}{}{}{}", BOLD, color, text, RESET)
+impl Color {
+    pub fn fg(self) -> std::borrow::Cow<'static, str> {
+        use std::borrow::Cow;
+        match self {
+            Color::Black => Cow::Borrowed("\x1b[30m"),
+            Color::Red => Cow::Borrowed("\x1b[31m"),
+            Color::Green => Cow::Borrowed("\x1b[32m"),
+            Color::Yellow => Cow::Borrowed("\x1b[33m"),
+            Color::Blue => Cow::Borrowed("\x1b[34m"),
+            Color::Magenta => Cow::Borrowed("\x1b[35m"),
+            Color::Cyan => Cow::Borrowed("\x1b[36m"),
+            Color::White => Cow::Borrowed("\x1b[37m"),
+            Color::Gray => Cow::Borrowed("\x1b[90m"),
+            Color::BrightRed => Cow::Borrowed("\x1b[91m"),
+            Color::BrightGreen => Cow::Borrowed("\x1b[92m"),
+            Color::BrightYellow => Cow::Borrowed("\x1b[93m"),
+            Color::BrightBlue => Cow::Borrowed("\x1b[94m"),
+            Color::BrightMagenta => Cow::Borrowed("\x1b[95m"),
+            Color::BrightCyan => Cow::Borrowed("\x1b[96m"),
+            Color::BrightWhite => Cow::Borrowed("\x1b[97m"),
+            Color::Color256(n) => Cow::Owned(format!("\x1b[38;5;{}m", n)),
+        }
+    }
+}
+
+pub fn colored(text: &str, color: Color) -> String {
+    format!("{}{}{}", color.fg(), text, RESET)
+}
+
+pub fn bold(text: &str, color: Color) -> String {
+    format!("{}{}{}{}", BOLD, color.fg(), text, RESET)
 }

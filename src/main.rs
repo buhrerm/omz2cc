@@ -9,9 +9,9 @@ use themes::{all_themes, get_theme};
 #[derive(Parser)]
 #[command(name = "omz2cc", about = "Oh My Zsh to Claude Code status line")]
 struct Cli {
-    /// Theme name to use for formatting
-    #[arg(short, long, default_value = "ys")]
-    theme: String,
+    /// Theme name (default: auto-detect from $ZSH_THEME or ~/.zshrc, fallback "ys")
+    #[arg(short, long)]
+    theme: Option<String>,
 
     /// List available themes
     #[arg(short, long)]
@@ -36,10 +36,16 @@ fn main() {
         return;
     }
 
-    let theme = match get_theme(&cli.theme) {
+    let theme_name = cli
+        .theme
+        .or_else(|| std::env::var("ZSH_THEME").ok().filter(|s| !s.is_empty()))
+        .or_else(detect_theme_from_zshrc)
+        .unwrap_or_else(|| "ys".to_string());
+
+    let theme = match get_theme(&theme_name) {
         Some(t) => t,
         None => {
-            eprintln!("Unknown theme: {}", cli.theme);
+            eprintln!("Unknown theme: {}", theme_name);
             eprintln!("Use --list to see available themes");
             std::process::exit(1);
         }
@@ -54,4 +60,24 @@ fn main() {
     let mut info = StatusInfo::gather();
     info.apply_overrides(&cli.set, &stdin_data);
     println!("{}", theme.format(&info));
+}
+
+/// Parse ~/.zshrc to find the last ZSH_THEME="..." assignment
+fn detect_theme_from_zshrc() -> Option<String> {
+    let home = std::env::var("HOME").ok()?;
+    let contents = std::fs::read_to_string(format!("{}/.zshrc", home)).ok()?;
+    let mut theme = None;
+    for line in contents.lines() {
+        let trimmed = line.trim();
+        if trimmed.starts_with('#') {
+            continue;
+        }
+        if let Some(rest) = trimmed.strip_prefix("ZSH_THEME=") {
+            let val = rest.trim_matches('"').trim_matches('\'');
+            if !val.is_empty() {
+                theme = Some(val.to_string());
+            }
+        }
+    }
+    theme
 }
