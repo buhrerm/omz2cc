@@ -21,7 +21,7 @@ After building, the status line in Claude Code should update to show the omz2cc 
 
 142 supported themes (all oh-my-zsh themes).
 
-By default, omz2cc auto-detects your theme from `ZSH_THEME` in `~/.zshrc` (or `$ZDOTDIR/.zshrc`). Falls back to `ys` if not found.
+Theme detection order: `--theme` flag > `$ZSH_THEME` env var > last `ZSH_THEME=` in `~/.zshrc` > fallback `ys`. The .zshrc parsing is needed because Claude Code doesn't inherit the shell's `$ZSH_THEME` env var.
 
 - `--theme <name>` — override with a specific theme
 - `--theme random` — pick a random theme
@@ -38,7 +38,7 @@ Override any theme field with `--set key=value`. Special values:
 - `@time` — current time in default 24h format (HH:MM:SS)
 - `@time:FORMAT` — current time with custom strftime format (e.g. `@time:%I:%M %p` for 12-hour)
 
-Stdin JSON from Claude Code is read automatically when piped (no flag needed).
+Requires `--stdin` flag when using `@model` or `@model-id` (reads Claude Code JSON from stdin).
 
 Overridable fields: `user`, `hostname`, `cwd`, `git_branch`, `time`.
 
