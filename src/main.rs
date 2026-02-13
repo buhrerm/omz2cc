@@ -3,6 +3,8 @@ mod config;
 mod info;
 mod themes;
 
+use std::io::IsTerminal;
+
 use clap::Parser;
 use config::{load_mappings, merge_mappings};
 use info::{StdinData, StatusInfo};
@@ -22,10 +24,6 @@ struct Cli {
     /// Override a field: --set user=@model --set hostname=myhost
     #[arg(short, long = "set", value_name = "KEY=VALUE")]
     set: Vec<String>,
-
-    /// Read Claude Code JSON from stdin (provides @model, @model-id)
-    #[arg(long)]
-    stdin: bool,
 
     /// Initialize default mappings config at ~/.config/omz2cc/mappings.conf
     #[arg(long)]
@@ -62,7 +60,8 @@ fn main() {
         }
     };
 
-    let stdin_data = if cli.stdin {
+    // Auto-read stdin when piped (not a terminal)
+    let stdin_data = if !std::io::stdin().is_terminal() {
         StdinData::read()
     } else {
         None
@@ -118,11 +117,12 @@ fn init_config() {
 # Fields: user, hostname, cwd, git_branch, time
 #
 # Special values:
-#   @model       — Claude Code model name (e.g. "Opus 4.6"), requires --stdin
-#   @model-id    — raw model ID (e.g. "claude-opus-4-6"), requires --stdin
+#   @model       — Claude Code model name (e.g. "Opus 4.6")
+#   @model-id    — raw model ID (e.g. "claude-opus-4-6")
 #   @time        — current time (HH:MM:SS)
 #   @time:FORMAT — custom strftime format (e.g. @time:%I:%M %p)
 #
+# Stdin JSON from Claude Code is read automatically when piped.
 # CLI --set overrides take precedence over these mappings.
 #
 # Examples:

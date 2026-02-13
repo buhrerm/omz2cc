@@ -13,7 +13,7 @@ cargo build
 omz2cc is configured directly as Claude Code's status line command:
 
 - Config: `~/.claude/settings.json`
-- Command: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --stdin --set user=@model`
+- Command: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --set user=@model`
 
 After building, the status line in Claude Code should update to show the omz2cc output with colors. Verify it looks correct there rather than just checking stdout.
 
@@ -38,20 +38,22 @@ Override any theme field with `--set key=value`. Special values:
 - `@time` — current time in default 24h format (HH:MM:SS)
 - `@time:FORMAT` — current time with custom strftime format (e.g. `@time:%I:%M %p` for 12-hour)
 
-Requires `--stdin` flag when using `@model` or `@model-id` (reads Claude Code JSON from stdin).
+Stdin JSON from Claude Code is read automatically when piped (no flag needed). `@model` and `@model-id` resolve from it.
 
 Overridable fields: `user`, `hostname`, `cwd`, `git_branch`, `time`.
 
-## Parallel Development
+## Mappings Config
 
-When working on multiple features simultaneously, use `git worktree` to check out separate branches in their own directories:
+Persistent field mappings can be set in `~/.config/omz2cc/mappings.conf`. Run `omz2cc --init` to scaffold the config. CLI `--set` overrides take precedence over config mappings.
 
-```sh
-git worktree add ../omz2cc-<branch-name> -b feature/<branch-name>
-```
+## Development Workflow
 
-Then run a separate Claude Code instance in each worktree directory. This avoids branch conflicts between concurrent sessions. Clean up when done:
+**Always use git worktrees for feature work.** Every new feature branch gets its own worktree:
 
 ```sh
+git worktree add ../omz2cc-<branch-name> -b feature/<branch-name> main
+# ... do work in ../omz2cc-<branch-name> ...
 git worktree remove ../omz2cc-<branch-name>
 ```
+
+Do not develop features directly on main.
