@@ -69,6 +69,7 @@ omz2cc --init
 | `--theme <name>` | Use a specific theme (default: auto-detect) |
 | `--list` | List all available themes |
 | `--set <KEY=VALUE>` | Override a field (repeatable) |
+| `--no-stdin` | Skip reading JSON from stdin |
 | `--init` | Create `~/.config/omz2cc/mappings.conf` with defaults |
 
 ### Theme Detection
@@ -82,7 +83,7 @@ Themes are resolved in this order:
 
 ### Stdin
 
-When stdin is piped (e.g. from Claude Code or ccstatusline), omz2cc automatically reads JSON to provide model context for `@model` and `@model-id` values. No flag needed.
+When stdin is piped (e.g. from Claude Code or ccstatusline), omz2cc automatically reads JSON to provide model context for `@model` and `@model-id` values. No flag needed. Use `--no-stdin` to skip reading stdin even when piped.
 
 ## Field Overrides
 

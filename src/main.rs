@@ -25,6 +25,10 @@ struct Cli {
     #[arg(short, long = "set", value_name = "KEY=VALUE")]
     set: Vec<String>,
 
+    /// Skip reading JSON from stdin (stdin is read automatically when piped)
+    #[arg(long)]
+    no_stdin: bool,
+
     /// Initialize default mappings config at ~/.config/omz2cc/mappings.conf
     #[arg(long)]
     init: bool,
@@ -60,8 +64,8 @@ fn main() {
         }
     };
 
-    // Auto-read stdin when piped (not a terminal)
-    let stdin_data = if !std::io::stdin().is_terminal() {
+    // Auto-read stdin when piped (not a terminal), unless --no-stdin
+    let stdin_data = if !cli.no_stdin && !std::io::stdin().is_terminal() {
         StdinData::read()
     } else {
         None
