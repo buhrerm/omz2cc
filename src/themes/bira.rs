@@ -1,3 +1,4 @@
+use crate::color::*;
 use crate::info::StatusInfo;
 use crate::themes::Theme;
 
@@ -10,10 +11,25 @@ impl Theme for Bira {
 
     // mike@zulu:~/Workspace/omz2cc on git:main ✓
     fn format(&self, info: &StatusInfo) -> String {
-        let mut s = format!("{}@{}:{}", info.user, info.hostname, info.cwd);
+        let mut s = format!(
+            "{}{}{}",
+            colored(&info.user, GREEN),
+            colored("@", WHITE),
+            colored(&format!("{}:{}", info.hostname, info.cwd), GREEN),
+        );
 
         if let Some(ref branch) = info.git_branch {
-            s.push_str(&format!(" on git:{} {}", branch, info.git_status_symbol()));
+            let (sym, clr) = if info.git_dirty == Some(true) {
+                (" ✗", YELLOW)
+            } else {
+                (" ✓", GREEN)
+            };
+            s.push_str(&format!(
+                " {} {}{}",
+                colored("on", WHITE),
+                colored(&format!("git:{}", branch), MAGENTA),
+                colored(sym, clr),
+            ));
         }
 
         s

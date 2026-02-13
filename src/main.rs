@@ -1,3 +1,4 @@
+mod color;
 mod info;
 mod themes;
 

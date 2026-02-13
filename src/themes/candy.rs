@@ -1,3 +1,4 @@
+use crate::color::*;
 use crate::info::StatusInfo;
 use crate::themes::Theme;
 
@@ -11,12 +12,16 @@ impl Theme for Candy {
     // mike@zulu [15:35:04] [~/Workspace/omz2cc] [main]
     fn format(&self, info: &StatusInfo) -> String {
         let mut s = format!(
-            "{}@{} [{}] [{}]",
-            info.user, info.hostname, info.time, info.cwd
+            "{}{}{} {} {}",
+            colored(&info.user, GREEN),
+            colored("@", WHITE),
+            colored(&info.hostname, BLUE),
+            colored(&format!("[{}]", info.time), GRAY),
+            bold(&format!("[{}]", info.cwd), YELLOW),
         );
 
         if let Some(ref branch) = info.git_branch {
-            s.push_str(&format!(" [{}]", branch));
+            s.push_str(&format!(" {}", colored(&format!("[{}]", branch), CYAN)));
         }
 
         s

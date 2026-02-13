@@ -34,13 +34,6 @@ impl StatusInfo {
         }
     }
 
-    pub fn git_status_symbol(&self) -> &str {
-        match self.git_dirty {
-            Some(true) => "✗",
-            Some(false) => "✓",
-            None => "",
-        }
-    }
 }
 
 fn hostname() -> String {

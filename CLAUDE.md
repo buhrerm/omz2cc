@@ -1,0 +1,25 @@
+# omz2cc
+
+Rust CLI that formats oh-my-zsh-style status lines with ANSI colors for ccstatusline.
+
+## Build
+
+```sh
+cargo build
+```
+
+## Testing
+
+To test visually, the omz2cc command is configured as the **second line** in ccstatusline:
+
+- Config: `~/.config/ccstatusline/settings.json`
+- Line 2 runs: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --theme ys`
+- The widget must have `"preserveColors": true` so ccstatusline passes through ANSI color codes from omz2cc instead of stripping them.
+
+After building, the status line in Claude Code should update to show the omz2cc output with colors. Verify it looks correct there rather than just checking stdout.
+
+## Themes
+
+10 supported themes: ys (default), robbyrussell, agnoster, af-magic, bira, bureau, candy, dallas, gallois, maran.
+
+Use `--theme <name>` to select, `--list` to show all.
