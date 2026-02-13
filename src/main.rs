@@ -3,7 +3,7 @@ mod info;
 mod themes;
 
 use clap::Parser;
-use info::StatusInfo;
+use info::{StdinData, StatusInfo};
 use themes::{all_themes, get_theme};
 
 #[derive(Parser)]
@@ -16,6 +16,15 @@ struct Cli {
     /// List available themes
     #[arg(short, long)]
     list: bool,
+
+    /// Override a field: --set user=@model --set hostname=claude
+    /// Special values: @model (pretty model from stdin JSON), @model-id (raw model ID)
+    #[arg(short, long = "set", value_name = "KEY=VALUE")]
+    set: Vec<String>,
+
+    /// Read Claude Code JSON from stdin (provides @model, @model-id)
+    #[arg(long)]
+    stdin: bool,
 }
 
 fn main() {
@@ -37,6 +46,13 @@ fn main() {
         }
     };
 
-    let info = StatusInfo::gather();
+    let stdin_data = if cli.stdin {
+        StdinData::read()
+    } else {
+        None
+    };
+
+    let mut info = StatusInfo::gather();
+    info.apply_overrides(&cli.set, &stdin_data);
     println!("{}", theme.format(&info));
 }
