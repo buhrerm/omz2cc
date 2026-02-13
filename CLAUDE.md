@@ -1,6 +1,6 @@
 # omz2cc
 
-Rust CLI that formats oh-my-zsh-style status lines with ANSI colors for ccstatusline.
+Rust CLI that formats oh-my-zsh-style status lines with ANSI colors for Claude Code's status line.
 
 ## Build
 
@@ -10,11 +10,10 @@ cargo build
 
 ## Testing
 
-To test visually, the omz2cc command is configured as the **second line** in ccstatusline:
+omz2cc is configured directly as Claude Code's status line command:
 
-- Config: `~/.config/ccstatusline/settings.json`
-- Line 2 runs: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --set user=@model`
-- The widget must have `"preserveColors": true` so ccstatusline passes through ANSI color codes from omz2cc instead of stripping them.
+- Config: `~/.claude/settings.json`
+- Command: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --stdin --set user=@model`
 
 After building, the status line in Claude Code should update to show the omz2cc output with colors. Verify it looks correct there rather than just checking stdout.
 
