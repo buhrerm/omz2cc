@@ -20,9 +20,9 @@ After building, the status line in Claude Code should update to show the omz2cc 
 
 ## Themes
 
-10 supported themes: ys (default), robbyrussell, agnoster, af-magic, bira, bureau, candy, dallas, gallois, maran.
+142 supported themes (all oh-my-zsh themes). Use `--theme <name>` to select, `--list` to show all, `--theme random` for a random theme.
 
-Use `--theme <name>` to select, `--list` to show all.
+Themes are defined as data in `src/themes/defs.rs` using a template DSL (`src/themes/template.rs`). Complex themes that need logic beyond the DSL can use manual Rust implementations (see `src/themes/agnoster.rs` as an example).
 
 ## Field Overrides (--set)
 
@@ -36,3 +36,17 @@ Override any theme field with `--set key=value`. Special values:
 Requires `--stdin` flag when using `@model` or `@model-id` (reads Claude Code JSON from stdin).
 
 Overridable fields: `user`, `hostname`, `cwd`, `git_branch`, `time`.
+
+## Parallel Development
+
+When working on multiple features simultaneously, use `git worktree` to check out separate branches in their own directories:
+
+```sh
+git worktree add ../omz2cc-<branch-name> -b feature/<branch-name>
+```
+
+Then run a separate Claude Code instance in each worktree directory. This avoids branch conflicts between concurrent sessions. Clean up when done:
+
+```sh
+git worktree remove ../omz2cc-<branch-name>
+```

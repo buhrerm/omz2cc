@@ -43,10 +43,15 @@ fn extract_json_string(json: &str, key: &str) -> Option<String> {
 pub struct StatusInfo {
     pub user: String,
     pub hostname: String,
+    pub short_hostname: String,
     pub cwd: String,
     pub cwd_basename: String,
     pub git_branch: Option<String>,
     pub git_dirty: Option<bool>,
+    pub git_ahead: Option<i32>,
+    pub git_behind: Option<i32>,
+    pub git_action: Option<String>,
+    pub exit_code: i32,
     pub time: String,
 }
 
@@ -57,17 +62,28 @@ impl StatusInfo {
             .unwrap_or_else(|_| String::from("unknown"));
 
         let hostname = hostname();
+        let short_hostname = hostname
+            .split('.')
+            .next()
+            .unwrap_or(&hostname)
+            .to_string();
         let (cwd, cwd_basename) = cwd_info();
         let (git_branch, git_dirty) = git_info();
+        let git_action = git_action();
         let time = current_time("%H:%M:%S");
 
         Self {
             user,
             hostname,
+            short_hostname,
             cwd,
             cwd_basename,
             git_branch,
             git_dirty,
+            git_ahead: None,
+            git_behind: None,
+            git_action,
+            exit_code: 0,
             time,
         }
     }
@@ -227,6 +243,28 @@ fn git_info() -> (Option<String>, Option<bool>) {
         .map(|o| !o.stdout.is_empty());
 
     (branch, dirty)
+}
+
+fn git_action() -> Option<String> {
+    let git_dir = Command::new("git")
+        .args(["rev-parse", "--git-dir"])
+        .output()
+        .ok()
+        .filter(|o| o.status.success())
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())?;
+
+    let path = std::path::Path::new(&git_dir);
+    if path.join("rebase-merge").exists() || path.join("rebase-apply").exists() {
+        Some("rebase".to_string())
+    } else if path.join("MERGE_HEAD").exists() {
+        Some("merge".to_string())
+    } else if path.join("CHERRY_PICK_HEAD").exists() {
+        Some("cherry-pick".to_string())
+    } else if path.join("BISECT_LOG").exists() {
+        Some("bisect".to_string())
+    } else {
+        None
+    }
 }
 
 fn current_time(fmt: &str) -> String {
