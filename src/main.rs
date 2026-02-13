@@ -17,8 +17,7 @@ struct Cli {
     #[arg(short, long)]
     list: bool,
 
-    /// Override a field: --set user=@model --set hostname=claude
-    /// Special values: @model (pretty model from stdin JSON), @model-id (raw model ID)
+    /// Override a field: --set user=@model --set hostname=myhost
     #[arg(short, long = "set", value_name = "KEY=VALUE")]
     set: Vec<String>,
 

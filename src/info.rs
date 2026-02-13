@@ -97,15 +97,13 @@ impl StatusInfo {
 }
 
 /// Resolve special value tokens:
-///   @model                  -> pretty model from stdin JSON (e.g. "Opus 4.6")
-///   @model-id               -> raw model ID from stdin JSON (e.g. "claude-opus-4-6")
-///   @model:claude-opus-4-6  -> pretty model from explicit value (e.g. "Opus 4.6")
-///   plain text              -> used as-is
+///   @model     -> pretty model from stdin JSON (e.g. "Opus 4.6")
+///   @model-id  -> raw model ID from stdin JSON (e.g. "claude-opus-4-6")
+///   plain text -> used as-is
 fn resolve_value(val: &str, stdin: &Option<StdinData>) -> String {
     match val {
         "@model" => {
             if let Some(data) = stdin {
-                // Use model.id and pretty-print it, with display_name as fallback
                 if let Some(ref id) = data.model_id {
                     return pretty_model(id);
                 }
@@ -122,9 +120,6 @@ fn resolve_value(val: &str, stdin: &Option<StdinData>) -> String {
                 }
             }
             "unknown".to_string()
-        }
-        _ if val.starts_with("@model:") => {
-            pretty_model(&val["@model:".len()..])
         }
         _ => val.to_string(),
     }
