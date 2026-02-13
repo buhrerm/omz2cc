@@ -9,7 +9,7 @@ use themes::{all_themes, get_theme};
 #[derive(Parser)]
 #[command(name = "omz2cc", about = "Oh My Zsh to Claude Code status line")]
 struct Cli {
-    /// Theme name (default: auto-detect from ~/.zshrc ZSH_THEME, fallback "ys")
+    /// Theme name (default: auto-detect from $ZSH_THEME or ~/.zshrc, fallback "ys")
     #[arg(short, long)]
     theme: Option<String>,
 
@@ -38,7 +38,9 @@ fn main() {
 
     let theme_name = cli
         .theme
-        .unwrap_or_else(|| detect_omz_theme().unwrap_or_else(|| "ys".to_string()));
+        .or_else(|| std::env::var("ZSH_THEME").ok().filter(|s| !s.is_empty()))
+        .or_else(detect_theme_from_zshrc)
+        .unwrap_or_else(|| "ys".to_string());
 
     let theme = match get_theme(&theme_name) {
         Some(t) => t,
@@ -60,41 +62,22 @@ fn main() {
     println!("{}", theme.format(&info));
 }
 
-/// Read ZSH_THEME from ~/.zshrc (or $ZDOTDIR/.zshrc)
-fn detect_omz_theme() -> Option<String> {
-    let zshrc = std::env::var("ZDOTDIR")
-        .ok()
-        .map(std::path::PathBuf::from)
-        .or_else(|| {
-            std::env::var("HOME")
-                .ok()
-                .map(std::path::PathBuf::from)
-        })?
-        .join(".zshrc");
-
-    let contents = std::fs::read_to_string(zshrc).ok()?;
-
+/// Parse ~/.zshrc to find the last ZSH_THEME="..." assignment
+fn detect_theme_from_zshrc() -> Option<String> {
+    let home = std::env::var("HOME").ok()?;
+    let contents = std::fs::read_to_string(format!("{}/.zshrc", home)).ok()?;
+    let mut theme = None;
     for line in contents.lines() {
         let trimmed = line.trim();
-        // Skip comments
         if trimmed.starts_with('#') {
             continue;
         }
-        // Match ZSH_THEME="theme" or ZSH_THEME='theme' or ZSH_THEME=theme
-        if let Some(rest) = trimmed
-            .strip_prefix("ZSH_THEME=")
-            .or_else(|| trimmed.strip_prefix("ZSH_THEME ="))
-        {
-            let rest = rest.trim();
-            let name = rest
-                .trim_matches('"')
-                .trim_matches('\'')
-                .trim();
-            if !name.is_empty() {
-                return Some(name.to_string());
+        if let Some(rest) = trimmed.strip_prefix("ZSH_THEME=") {
+            let val = rest.trim_matches('"').trim_matches('\'');
+            if !val.is_empty() {
+                theme = Some(val.to_string());
             }
         }
     }
-
-    None
+    theme
 }
