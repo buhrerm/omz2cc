@@ -13,14 +13,20 @@ cargo build
 To test visually, the omz2cc command is configured as the **second line** in ccstatusline:
 
 - Config: `~/.config/ccstatusline/settings.json`
-- Line 2 runs: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --theme ys --stdin --set user=@model`
+- Line 2 runs: `/home/mike/Workspace/omz2cc/target/debug/omz2cc --stdin --set user=@model`
 - The widget must have `"preserveColors": true` so ccstatusline passes through ANSI color codes from omz2cc instead of stripping them.
 
 After building, the status line in Claude Code should update to show the omz2cc output with colors. Verify it looks correct there rather than just checking stdout.
 
 ## Themes
 
-142 supported themes (all oh-my-zsh themes). Use `--theme <name>` to select, `--list` to show all, `--theme random` for a random theme.
+142 supported themes (all oh-my-zsh themes).
+
+By default, omz2cc auto-detects your theme from `ZSH_THEME` in `~/.zshrc` (or `$ZDOTDIR/.zshrc`). Falls back to `ys` if not found.
+
+- `--theme <name>` — override with a specific theme
+- `--theme random` — pick a random theme
+- `--list` — show all available themes
 
 Themes are defined as data in `src/themes/defs.rs` using a template DSL (`src/themes/template.rs`). Complex themes that need logic beyond the DSL can use manual Rust implementations (see `src/themes/agnoster.rs` as an example).
 
