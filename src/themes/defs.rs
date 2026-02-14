@@ -38,6 +38,7 @@ const YS: TemplateDef = TemplateDef {
         text(" "),
         field_fmt(Time, White, "[", "]"),
     ],
+    rprompt: &[],
 };
 
 // Source: robbyrussell.zsh-theme
@@ -50,6 +51,7 @@ const ROBBYRUSSELL: TemplateDef = TemplateDef {
         field(CwdBasename, Cyan),
         if_git(GIT_COLON_PAREN_ROBBYRUSSELL),
     ],
+    rprompt: &[],
 };
 
 // agnoster — manual Rust impl in agnoster.rs (powerline segments with bg colors)
@@ -69,6 +71,7 @@ const AF_MAGIC: TemplateDef = TemplateDef {
         text(" "),
         lit("»", Color256(105)),
     ],
+    rprompt: &[],
 };
 
 // Source: bira.zsh-theme
@@ -85,6 +88,7 @@ const BIRA: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_ANGLE_YELLOW_DIRTY_DOT),
     ],
+    rprompt: &[],
 };
 
 // Source: bureau.zsh-theme
@@ -106,6 +110,7 @@ const BUREAU: TemplateDef = TemplateDef {
             lit("]", White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: candy.zsh-theme
@@ -122,6 +127,7 @@ const CANDY: TemplateDef = TemplateDef {
         field_fmt(Cwd, White, "[", "]"),
         if_git(GIT_BRACKET_GREEN),
     ],
+    rprompt: &[],
 };
 
 // Source: dallas.zsh-theme
@@ -140,6 +146,7 @@ const DALLAS: TemplateDef = TemplateDef {
         text(" "),
         field(User, Red),
     ],
+    rprompt: &[],
 };
 
 // Source: gallois.zsh-theme — uses vcs_info
@@ -156,6 +163,7 @@ const GALLOIS: TemplateDef = TemplateDef {
             lit("]", Cyan),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: maran.zsh-theme
@@ -173,6 +181,7 @@ const MARAN: TemplateDef = TemplateDef {
             field_fmt(GitBranch, Cyan, "git:(", ")"),
         ]),
     ],
+    rprompt: &[],
 };
 
 // ===== Additional themes (alphabetical) ====================================
@@ -194,6 +203,7 @@ const THREEDEN: TemplateDef = TemplateDef {
             dirty(")", " *)", White, White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: Soliah.zsh-theme
@@ -209,6 +219,7 @@ const SOLIAH: TemplateDef = TemplateDef {
             dirty(")", " *)", White, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: adben.zsh-theme
@@ -230,6 +241,7 @@ const ADBEN: TemplateDef = TemplateDef {
             lit("›", Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: afowler.zsh-theme
@@ -244,6 +256,7 @@ const AFOWLER: TemplateDef = TemplateDef {
         field(Cwd, Magenta),
         if_git(GIT_ANGLE_YELLOW),
     ],
+    rprompt: &[],
 };
 
 // Source: alanpeabody.zsh-theme
@@ -263,6 +276,7 @@ const ALANPEABODY: TemplateDef = TemplateDef {
             field(GitBranch, Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: amuse.zsh-theme
@@ -279,6 +293,7 @@ const AMUSE: TemplateDef = TemplateDef {
         text(" ⌚ "),
         field_bold(Time, Red),
     ],
+    rprompt: &[],
 };
 
 // Source: apple.zsh-theme — uses vcs_info
@@ -293,6 +308,7 @@ const APPLE: TemplateDef = TemplateDef {
         field_bold(Cwd, Cyan),
         if_git(GIT_VCS_INFO),
     ],
+    rprompt: &[],
 };
 
 // Source: arrow.zsh-theme
@@ -309,6 +325,7 @@ const ARROW: TemplateDef = TemplateDef {
         text(" "),
         lit("➤", Yellow),
     ],
+    rprompt: &[],
 };
 
 // Source: aussiegeek.zsh-theme
@@ -329,6 +346,7 @@ const AUSSIEGEEK: TemplateDef = TemplateDef {
             lit_bold(")", Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: avit.zsh-theme
@@ -343,6 +361,7 @@ const AVIT: TemplateDef = TemplateDef {
             dirty(" ✔", " ✗", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: awesomepanda.zsh-theme
@@ -354,6 +373,7 @@ const AWESOMEPANDA: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_COLON_PAREN_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: blinks.zsh-theme
@@ -373,6 +393,7 @@ const BLINKS: TemplateDef = TemplateDef {
             dirty("]", " *]", Blue, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: candy-kingdom.zsh-theme
@@ -392,10 +413,11 @@ const CANDY_KINGDOM: TemplateDef = TemplateDef {
             dirty(")", "!)", Magenta, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: clean.zsh-theme
-// user:dir/ (branch✗)
+// user:dir/ (branch✗) [HH:MM:SS]
 const CLEAN: TemplateDef = TemplateDef {
     name: "clean",
     segments: &[
@@ -410,6 +432,7 @@ const CLEAN: TemplateDef = TemplateDef {
             lit_bold(")", Blue),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: cloud.zsh-theme
@@ -427,6 +450,7 @@ const CLOUD: TemplateDef = TemplateDef {
             dirty("]", "] ⚡", Green, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: crcandy.zsh-theme (same git as candy)
@@ -441,6 +465,7 @@ const CRCANDY: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_BRACKET_GREEN),
     ],
+    rprompt: &[],
 };
 
 // Source: crunch.zsh-theme
@@ -463,6 +488,7 @@ const CRUNCH: TemplateDef = TemplateDef {
             dirty(" ✓", " ✗", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: cypher.zsh-theme — no git
@@ -474,6 +500,7 @@ const CYPHER: TemplateDef = TemplateDef {
         lit(" :: ", Red),
         field(Cwd, Green),
     ],
+    rprompt: &[],
 };
 
 // Source: dallas.zsh-theme — already defined above as DALLAS
@@ -495,6 +522,7 @@ const DARKBLOOD: TemplateDef = TemplateDef {
             dirty("]", " ⚡]", White, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: daveverwer.zsh-theme
@@ -514,6 +542,7 @@ const DAVEVERWER: TemplateDef = TemplateDef {
             lit(")", Blue),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: dieter.zsh-theme
@@ -534,6 +563,7 @@ const DIETER: TemplateDef = TemplateDef {
             dirty("", "?", Green, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: dogenpunk.zsh-theme — git in RPROMPT
@@ -553,6 +583,7 @@ const DOGENPUNK: TemplateDef = TemplateDef {
             dirty(")", "!)", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: dpoggi.zsh-theme
@@ -573,10 +604,11 @@ const DPOGGI: TemplateDef = TemplateDef {
             lit(")", Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: dst.zsh-theme
-// user@host: ~/dir branch!
+// user@host: ~/dir branch! [HH:MM:SS]
 const DST: TemplateDef = TemplateDef {
     name: "dst",
     segments: &[
@@ -592,6 +624,7 @@ const DST: TemplateDef = TemplateDef {
             dirty("", "!", Red, Red),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: dstufft.zsh-theme
@@ -616,10 +649,11 @@ const DSTUFFT: TemplateDef = TemplateDef {
             dirty("", "!", Green, Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: duellj.zsh-theme — no git in PROMPT (RPROMPT has time)
-// user@host:~/dir
+// user@host:~/dir [HH:MM:SS]
 const DUELLJ: TemplateDef = TemplateDef {
     name: "duellj",
     segments: &[
@@ -629,6 +663,7 @@ const DUELLJ: TemplateDef = TemplateDef {
         lit(":", White),
         field_bold(Cwd, Yellow),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: eastwood.zsh-theme
@@ -643,6 +678,7 @@ const EASTWOOD: TemplateDef = TemplateDef {
         field_bold(Cwd, Yellow),
         if_git(GIT_BRACKET_GREEN),
     ],
+    rprompt: &[],
 };
 
 // Source: edvardm.zsh-theme
@@ -657,6 +693,7 @@ const EDVARDM: TemplateDef = TemplateDef {
         field(Cwd, Cyan),
         if_git(GIT_COLON_PAREN_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: emotty.zsh-theme — uses vcs_info
@@ -668,6 +705,7 @@ const EMOTTY: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_VCS_INFO),
     ],
+    rprompt: &[],
 };
 
 // Source: essembeh.zsh-theme
@@ -689,6 +727,7 @@ const ESSEMBEH: TemplateDef = TemplateDef {
             lit(")", Cyan),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: evan.zsh-theme — no git
@@ -700,6 +739,7 @@ const EVAN: TemplateDef = TemplateDef {
         lit(" :: ", Red),
         field(Cwd, Green),
     ],
+    rprompt: &[],
 };
 
 // Source: fino.zsh-theme — 256-color
@@ -725,6 +765,7 @@ const FINO: TemplateDef = TemplateDef {
             dirty("✔", "✘✘✘", Color256(40), Color256(202)),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: fino-time.zsh-theme — 256-color (like fino + time)
@@ -752,6 +793,7 @@ const FINO_TIME: TemplateDef = TemplateDef {
         text(" "),
         field(Time, White),
     ],
+    rprompt: &[],
 };
 
 // Source: fishy.zsh-theme — git in RPROMPT
@@ -771,6 +813,7 @@ const FISHY: TemplateDef = TemplateDef {
         text(" "),
         lit(">", White),
     ],
+    rprompt: &[],
 };
 
 // Source: flazz.zsh-theme
@@ -788,10 +831,11 @@ const FLAZZ: TemplateDef = TemplateDef {
             lit_bold("›", Cyan),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: fletcherm.zsh-theme
-// user@host:~/dir (branch⚡/)
+// user@host:~/dir (branch⚡/) [HH:MM:SS]
 const FLETCHERM: TemplateDef = TemplateDef {
     name: "fletcherm",
     segments: &[
@@ -807,6 +851,7 @@ const FLETCHERM: TemplateDef = TemplateDef {
             dirty(")", "⚡)", Blue, Yellow),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: fox.zsh-theme
@@ -824,6 +869,7 @@ const FOX: TemplateDef = TemplateDef {
             dirty(" ✔", " ✗", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: frisk.zsh-theme
@@ -846,6 +892,7 @@ const FRISK: TemplateDef = TemplateDef {
         text(" "),
         field_fmt(Time, White, "[", "]"),
     ],
+    rprompt: &[],
 };
 
 // Source: frontcube.zsh-theme — git in RPROMPT
@@ -861,6 +908,7 @@ const FRONTCUBE: TemplateDef = TemplateDef {
             dirty("] ✔", "] ✖", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: funky.zsh-theme — no git
@@ -874,6 +922,7 @@ const FUNKY: TemplateDef = TemplateDef {
         text(" "),
         field_bold(Cwd, Cyan),
     ],
+    rprompt: &[],
 };
 
 // Source: fwalch.zsh-theme
@@ -893,6 +942,7 @@ const FWALCH: TemplateDef = TemplateDef {
             dirty(")", ") ✗", Blue, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: gallifrey.zsh-theme
@@ -905,6 +955,7 @@ const GALLIFREY: TemplateDef = TemplateDef {
         field(Cwd, White),
         if_git(GIT_ANGLE_YELLOW),
     ],
+    rprompt: &[],
 };
 
 // Source: garyblessington.zsh-theme
@@ -924,6 +975,7 @@ const GARYBLESSINGTON: TemplateDef = TemplateDef {
             dirty(")", ") ✗", Blue, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: gentoo.zsh-theme — uses vcs_info
@@ -944,6 +996,7 @@ const GENTOO: TemplateDef = TemplateDef {
             lit(")", Magenta),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: geoffgarside.zsh-theme
@@ -961,6 +1014,7 @@ const GEOFFGARSIDE: TemplateDef = TemplateDef {
             field_fmt(GitBranch, Yellow, "git:(", ")"),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: gianu.zsh-theme
@@ -983,6 +1037,7 @@ const GIANU: TemplateDef = TemplateDef {
         ]),
         lit("]", White),
     ],
+    rprompt: &[],
 };
 
 // Source: gnzh.zsh-theme
@@ -998,6 +1053,7 @@ const GNZH: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_ANGLE_YELLOW),
     ],
+    rprompt: &[],
 };
 
 // Source: gozilla.zsh-theme — git status in RPROMPT
@@ -1017,6 +1073,7 @@ const GOZILLA: TemplateDef = TemplateDef {
             lit(")", White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: half-life.zsh-theme — uses vcs_info with 256-color
@@ -1033,6 +1090,7 @@ const HALF_LIFE: TemplateDef = TemplateDef {
             dirty("", "●", Cyan, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: humza.zsh-theme
@@ -1050,6 +1108,7 @@ const HUMZA: TemplateDef = TemplateDef {
             field_fmt(GitBranch, Red, "±(", ");"),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: imajes.zsh-theme — no git in PROMPT
@@ -1063,6 +1122,7 @@ const IMAJES: TemplateDef = TemplateDef {
         text(" "),
         field(Cwd, Cyan),
     ],
+    rprompt: &[],
 };
 
 // Source: intheloop.zsh-theme
@@ -1082,6 +1142,7 @@ const INTHELOOP: TemplateDef = TemplateDef {
             dirty(")", " ⚡)", Gray, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: itchy.zsh-theme — git in RPROMPT
@@ -1100,6 +1161,7 @@ const ITCHY: TemplateDef = TemplateDef {
             dirty(" ✔", " ✗", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: jaischeema.zsh-theme
@@ -1119,6 +1181,7 @@ const JAISCHEEMA: TemplateDef = TemplateDef {
             dirty(")", ") ✗", Blue, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: jbergantine.zsh-theme
@@ -1138,6 +1201,7 @@ const JBERGANTINE: TemplateDef = TemplateDef {
             dirty(")", ") ✗", White, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: jispwoso.zsh-theme
@@ -1148,6 +1212,7 @@ const JISPWOSO: TemplateDef = TemplateDef {
         field(Cwd, Green),
         if_git(GIT_COLON_PAREN_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: jnrowe.zsh-theme — uses vcs_info
@@ -1160,6 +1225,7 @@ const JNROWE: TemplateDef = TemplateDef {
         field_bold(Cwd, Yellow),
         if_git(GIT_VCS_INFO),
     ],
+    rprompt: &[],
 };
 
 // Source: jonathan.zsh-theme
@@ -1179,6 +1245,7 @@ const JONATHAN: TemplateDef = TemplateDef {
             field(GitBranch, Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: josh.zsh-theme
@@ -1198,6 +1265,7 @@ const JOSH: TemplateDef = TemplateDef {
             dirty(")", ") ✗", White, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: jreese.zsh-theme
@@ -1216,6 +1284,7 @@ const JREESE: TemplateDef = TemplateDef {
             dirty("", "⚡", Green, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: jtriley.zsh-theme — no git
@@ -1231,6 +1300,7 @@ const JTRILEY: TemplateDef = TemplateDef {
         text(" "),
         field_bold(Cwd, Green),
     ],
+    rprompt: &[],
 };
 
 // Source: juanghurtado.zsh-theme — git in RPROMPT
@@ -1253,6 +1323,7 @@ const JUANGHURTADO: TemplateDef = TemplateDef {
             dirty("", "(*)", Green, Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: junkfood.zsh-theme
@@ -1270,6 +1341,7 @@ const JUNKFOOD: TemplateDef = TemplateDef {
             dirty(" ✔", " ✗✗✗", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: kafeitu.zsh-theme
@@ -1284,6 +1356,7 @@ const KAFEITU: TemplateDef = TemplateDef {
         field_bold(Cwd, Yellow),
         if_git(GIT_COLON_PAREN_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: kardan.zsh-theme — git in RPROMPT
@@ -1301,6 +1374,7 @@ const KARDAN: TemplateDef = TemplateDef {
         lit("@", White),
         field(ShortHostname, White),
     ],
+    rprompt: &[],
 };
 
 // Source: kennethreitz.zsh-theme
@@ -1318,6 +1392,7 @@ const KENNETHREITZ: TemplateDef = TemplateDef {
         text(" "),
         lit("»", Red),
     ],
+    rprompt: &[],
 };
 
 // Source: kiwi.zsh-theme
@@ -1334,6 +1409,7 @@ const KIWI: TemplateDef = TemplateDef {
             lit_bold("]-", White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: kolo.zsh-theme — uses vcs_info
@@ -1344,6 +1420,7 @@ const KOLO: TemplateDef = TemplateDef {
         field_bold(CwdBasename, Magenta),
         if_git(GIT_VCS_INFO),
     ],
+    rprompt: &[],
 };
 
 // Source: kphoen.zsh-theme
@@ -1363,6 +1440,7 @@ const KPHOEN: TemplateDef = TemplateDef {
         ]),
         lit("]", White),
     ],
+    rprompt: &[],
 };
 
 // Source: lambda.zsh-theme
@@ -1378,6 +1456,7 @@ const LAMBDA: TemplateDef = TemplateDef {
             field(GitBranch, Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: linuxonly.zsh-theme — uses vcs_info
@@ -1392,6 +1471,7 @@ const LINUXONLY: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_VCS_INFO),
     ],
+    rprompt: &[],
 };
 
 // Source: lukerandall.zsh-theme
@@ -1406,6 +1486,7 @@ const LUKERANDALL: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_PAREN_YELLOW),
     ],
+    rprompt: &[],
 };
 
 // Source: macovsky.zsh-theme
@@ -1416,6 +1497,7 @@ const MACOVSKY: TemplateDef = TemplateDef {
         field(Cwd, Green),
         if_git(GIT_ANGLE_YELLOW),
     ],
+    rprompt: &[],
 };
 
 // Source: macovsky-ruby.zsh-theme — no git
@@ -1427,6 +1509,7 @@ const MACOVSKY_RUBY: TemplateDef = TemplateDef {
         text(" "),
         lit("❯", Magenta),
     ],
+    rprompt: &[],
 };
 
 // Source: mgutz.zsh-theme
@@ -1442,6 +1525,7 @@ const MGUTZ: TemplateDef = TemplateDef {
             dirty("]", "*]", Yellow, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: mh.zsh-theme — git in RPROMPT
@@ -1457,6 +1541,7 @@ const MH: TemplateDef = TemplateDef {
             dirty(")", " ✱)", White, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: michelebologna.zsh-theme
@@ -1477,6 +1562,7 @@ const MICHELEBOLOGNA: TemplateDef = TemplateDef {
             lit(")", Blue),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: mikeh.zsh-theme — uses vcs_info
@@ -1502,6 +1588,7 @@ const MIKEH: TemplateDef = TemplateDef {
             lit(">", White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: miloshadzic.zsh-theme
@@ -1517,6 +1604,7 @@ const MILOSHADZIC: TemplateDef = TemplateDef {
         ]),
         lit(" ⇒", Cyan),
     ],
+    rprompt: &[],
 };
 
 // Source: minimal.zsh-theme
@@ -1532,6 +1620,7 @@ const MINIMAL: TemplateDef = TemplateDef {
             dirty("]", "●]", White, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: mira.zsh-theme
@@ -1546,10 +1635,11 @@ const MIRA: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_PAREN_YELLOW),
     ],
+    rprompt: &[],
 };
 
 // Source: mlh.zsh-theme — complex RPROMPT
-// user@host ~/dir (branch)
+// user@host ~/dir (branch) [HH:MM:SS]
 const MLH: TemplateDef = TemplateDef {
     name: "mlh",
     segments: &[
@@ -1563,6 +1653,7 @@ const MLH: TemplateDef = TemplateDef {
             field(GitBranch, White),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: mortalscumbag.zsh-theme — custom git function
@@ -1578,6 +1669,7 @@ const MORTALSCUMBAG: TemplateDef = TemplateDef {
             lit_bold("›", White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: mrtazz.zsh-theme — git in RPROMPT
@@ -1596,6 +1688,7 @@ const MRTAZZ: TemplateDef = TemplateDef {
             dirty(">", "✗>", Green, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: murilasso.zsh-theme
@@ -1614,6 +1707,7 @@ const MURILASSO: TemplateDef = TemplateDef {
             dirty(" ✔", " ✗", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: muse.zsh-theme — 256-color
@@ -1632,10 +1726,11 @@ const MUSE: TemplateDef = TemplateDef {
         text(" "),
         lit("ᐅ", Color256(77)),
     ],
+    rprompt: &[],
 };
 
 // Source: nanotech.zsh-theme — git in RPROMPT
-// ▸ ~/dir branch*
+// ▸ ~/dir branch* HH:MM:SS
 const NANOTECH: TemplateDef = TemplateDef {
     name: "nanotech",
     segments: &[
@@ -1648,6 +1743,7 @@ const NANOTECH: TemplateDef = TemplateDef {
             dirty("", "*", Yellow, Red),
         ]),
     ],
+    rprompt: &[field(Time, White)],
 };
 
 // Source: nebirhos.zsh-theme
@@ -1662,6 +1758,7 @@ const NEBIRHOS: TemplateDef = TemplateDef {
         field_bold(Cwd, Cyan),
         if_git(GIT_COLON_PAREN_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: nicoulaj.zsh-theme — uses vcs_info, RPROMPT
@@ -1678,6 +1775,7 @@ const NICOULAJ: TemplateDef = TemplateDef {
             lit(")", Magenta),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: norm.zsh-theme
@@ -1703,6 +1801,7 @@ const NORM: TemplateDef = TemplateDef {
             lit("→", Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: obraun.zsh-theme
@@ -1723,6 +1822,7 @@ const OBRAUN: TemplateDef = TemplateDef {
         field(Cwd, Green),
         if_git(GIT_ANGLE_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: oldgallois.zsh-theme
@@ -1733,6 +1833,7 @@ const OLDGALLOIS: TemplateDef = TemplateDef {
         field(Cwd, Cyan),
         if_git(GIT_BRACKET_GREEN),
     ],
+    rprompt: &[],
 };
 
 // Source: peepcode.zsh-theme — git in RPROMPT
@@ -1750,10 +1851,11 @@ const PEEPCODE: TemplateDef = TemplateDef {
             field(GitBranch, White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: philips.zsh-theme
-// [~/dir] (branch *)
+// [~/dir] (branch *) [HH:MM:SS]
 const PHILIPS: TemplateDef = TemplateDef {
     name: "philips",
     segments: &[
@@ -1767,10 +1869,11 @@ const PHILIPS: TemplateDef = TemplateDef {
             dirty(")", " *)", Blue, Blue),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: pmcgee.zsh-theme
-// user@host ~/dir branch*
+// user@host ~/dir branch* [HH:MM:SS]
 const PMCGEE: TemplateDef = TemplateDef {
     name: "pmcgee",
     segments: &[
@@ -1785,6 +1888,7 @@ const PMCGEE: TemplateDef = TemplateDef {
             dirty("", "*", White, Red),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: pygmalion.zsh-theme
@@ -1803,6 +1907,7 @@ const PYGMALION: TemplateDef = TemplateDef {
             dirty("", "⚡", Green, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: pygmalion-virtualenv.zsh-theme
@@ -1821,6 +1926,7 @@ const PYGMALION_VIRTUALENV: TemplateDef = TemplateDef {
             dirty("", "⚡", Green, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: re5et.zsh-theme
@@ -1838,6 +1944,7 @@ const RE5ET: TemplateDef = TemplateDef {
             dirty(" ♥", " ±", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: refined.zsh-theme — uses vcs_info, RPROMPT
@@ -1852,6 +1959,7 @@ const REFINED: TemplateDef = TemplateDef {
             dirty("", "!", Magenta, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: rgm.zsh-theme
@@ -1869,6 +1977,7 @@ const RGM: TemplateDef = TemplateDef {
             field(GitBranch, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: risto.zsh-theme
@@ -1883,10 +1992,11 @@ const RISTO: TemplateDef = TemplateDef {
         field(Cwd, Green),
         if_git(GIT_ANGLE_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: rixius.zsh-theme
-// [~/dir] on branch!/√
+// [~/dir] on branch!/√ HH:MM:SS
 const RIXIUS: TemplateDef = TemplateDef {
     name: "rixius",
     segments: &[
@@ -1900,6 +2010,7 @@ const RIXIUS: TemplateDef = TemplateDef {
             dirty(" √", " !", Green, Magenta),
         ]),
     ],
+    rprompt: &[field(Time, White)],
 };
 
 // Source: rkj.zsh-theme — no git
@@ -1913,6 +2024,7 @@ const RKJ: TemplateDef = TemplateDef {
         text(" "),
         field_bold(Cwd, Blue),
     ],
+    rprompt: &[],
 };
 
 // Source: rkj-repos.zsh-theme — no git
@@ -1926,6 +2038,7 @@ const RKJ_REPOS: TemplateDef = TemplateDef {
         text(" "),
         field_bold(Cwd, Blue),
     ],
+    rprompt: &[],
 };
 
 // Source: sammy.zsh-theme
@@ -1945,6 +2058,7 @@ const SAMMY: TemplateDef = TemplateDef {
             dirty(")", "*)", White, White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: simonoff.zsh-theme
@@ -1964,6 +2078,7 @@ const SIMONOFF: TemplateDef = TemplateDef {
             lit("]", White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: simple.zsh-theme
@@ -1984,6 +2099,7 @@ const SIMPLE: TemplateDef = TemplateDef {
             lit_bold(")", Blue),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: skaro.zsh-theme
@@ -1996,6 +2112,7 @@ const SKARO: TemplateDef = TemplateDef {
         field_fmt_bold(Cwd, Cyan, "[", "]"),
         if_git(GIT_COLON_PAREN_RED),
     ],
+    rprompt: &[],
 };
 
 // Source: smt.zsh-theme
@@ -2012,6 +2129,7 @@ const SMT: TemplateDef = TemplateDef {
             dirty(" ✓", " ⚡", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: sonicradish.zsh-theme
@@ -2029,6 +2147,7 @@ const SONICRADISH: TemplateDef = TemplateDef {
             dirty(" ✔:", " ✘:", White, White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: sorin.zsh-theme
@@ -2039,6 +2158,7 @@ const SORIN: TemplateDef = TemplateDef {
         field(CwdBasename, Cyan),
         if_git(GIT_COLON_SORIN),
     ],
+    rprompt: &[],
 };
 
 // Source: sporty_256.zsh-theme — 256-color
@@ -2055,6 +2175,7 @@ const SPORTY_256: TemplateDef = TemplateDef {
         ]),
         field(CwdBasename, Color256(208)),
     ],
+    rprompt: &[],
 };
 
 // Source: steeef.zsh-theme — uses vcs_info with 256-color
@@ -2075,6 +2196,7 @@ const STEEEF: TemplateDef = TemplateDef {
         text(" "),
         lit("λ", Color256(166)),
     ],
+    rprompt: &[],
 };
 
 // Source: strug.zsh-theme
@@ -2090,6 +2212,7 @@ const STRUG: TemplateDef = TemplateDef {
             dirty(" ✔", " ✘", Green, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: sunaku.zsh-theme
@@ -2103,6 +2226,7 @@ const SUNAKU: TemplateDef = TemplateDef {
             field(GitBranch, Magenta),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: sunrise.zsh-theme — custom git function
@@ -2119,6 +2243,7 @@ const SUNRISE: TemplateDef = TemplateDef {
             lit("›", White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: superjarin.zsh-theme
@@ -2134,6 +2259,7 @@ const SUPERJARIN: TemplateDef = TemplateDef {
             dirty(">", "> ✗", White, Yellow),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: suvash.zsh-theme
@@ -2149,6 +2275,7 @@ const SUVASH: TemplateDef = TemplateDef {
             dirty("", "!", Green, Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: takashiyoshida.zsh-theme
@@ -2164,6 +2291,7 @@ const TAKASHIYOSHIDA: TemplateDef = TemplateDef {
             dirty("", "!", Green, Green),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: terminalparty.zsh-theme — git in RPROMPT
@@ -2183,6 +2311,7 @@ const TERMINALPARTY: TemplateDef = TemplateDef {
             dirty(")", "⚡)", Yellow, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: theunraveler.zsh-theme — git in RPROMPT
@@ -2198,10 +2327,11 @@ const THEUNRAVELER: TemplateDef = TemplateDef {
         text(" "),
         lit("➜", Green),
     ],
+    rprompt: &[],
 };
 
 // Source: tjkirch.zsh-theme
-// [~/dir] branch⚡
+// [~/dir] branch⚡ [HH:MM:SS]
 const TJKIRCH: TemplateDef = TemplateDef {
     name: "tjkirch",
     segments: &[
@@ -2214,10 +2344,11 @@ const TJKIRCH: TemplateDef = TemplateDef {
             dirty("", "⚡", Green, Red),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: tjkirch_mod.zsh-theme
-// [~/dir] branch⚡
+// [~/dir] branch⚡ [HH:MM:SS]
 const TJKIRCH_MOD: TemplateDef = TemplateDef {
     name: "tjkirch_mod",
     segments: &[
@@ -2230,10 +2361,11 @@ const TJKIRCH_MOD: TemplateDef = TemplateDef {
             dirty("", "⚡", Green, Red),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: tonotdo.zsh-theme
-// ~/dir (branch✗/)
+// ~/dir (branch✗/) [HH:MM:SS]
 const TONOTDO: TemplateDef = TemplateDef {
     name: "tonotdo",
     segments: &[
@@ -2245,6 +2377,7 @@ const TONOTDO: TemplateDef = TemplateDef {
             dirty(")", "✗)", Blue, Yellow),
         ]),
     ],
+    rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: trapd00r.zsh-theme — uses vcs_info
@@ -2259,6 +2392,7 @@ const TRAPD00R: TemplateDef = TemplateDef {
         field_bold(Cwd, Yellow),
         if_git(GIT_VCS_INFO),
     ],
+    rprompt: &[],
 };
 
 // Source: wedisagree.zsh-theme — complex: git in RPROMPT
@@ -2274,6 +2408,7 @@ const WEDISAGREE: TemplateDef = TemplateDef {
             field(GitBranch, Magenta),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: wezm.zsh-theme
@@ -2289,6 +2424,7 @@ const WEZM: TemplateDef = TemplateDef {
             dirty(")", ")⚡", Blue, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: wezm+.zsh-theme
@@ -2304,6 +2440,7 @@ const WEZM_PLUS: TemplateDef = TemplateDef {
             dirty(")", ")✗", Blue, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: wuffers.zsh-theme
@@ -2323,6 +2460,7 @@ const WUFFERS: TemplateDef = TemplateDef {
             dirty("]", " x]", Blue, Red),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: xiong-chiamiov.zsh-theme — no git
@@ -2336,6 +2474,7 @@ const XIONG_CHIAMIOV: TemplateDef = TemplateDef {
         lit("@", White),
         field(ShortHostname, Green),
     ],
+    rprompt: &[],
 };
 
 // Source: xiong-chiamiov-plus.zsh-theme
@@ -2353,6 +2492,7 @@ const XIONG_CHIAMIOV_PLUS: TemplateDef = TemplateDef {
             field(GitBranch, White),
         ]),
     ],
+    rprompt: &[],
 };
 
 // Source: zhann.zsh-theme — uses vcs_info
@@ -2363,6 +2503,7 @@ const ZHANN: TemplateDef = TemplateDef {
         field_bold(Cwd, Blue),
         if_git(GIT_VCS_INFO),
     ],
+    rprompt: &[],
 };
 
 // ---------------------------------------------------------------------------
