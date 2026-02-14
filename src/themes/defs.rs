@@ -122,23 +122,25 @@ const BUREAU: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: candy.zsh-theme
+// Source: candy.zsh-theme (also used by crcandy)
 // user@host [HH:MM:SS] [~/dir] [branch *]-> $
+const CANDY_SEGMENTS: &[Segment] = &[
+    field_bold(User, Green),
+    lit_bold("@", Green),
+    field_bold(ShortHostname, Green),
+    text(" "),
+    field_fmt(Time, Blue, "[", "]"),
+    text(" "),
+    field_fmt(Cwd, White, "[", "]"),
+    if_git(GIT_BRACKET_GREEN),
+    lit("->", Blue),
+    text(" "),
+    lit_bold("$", Blue),
+];
+
 const CANDY: TemplateDef = TemplateDef {
     name: "candy",
-    segments: &[
-        field_bold(User, Green),
-        lit_bold("@", Green),
-        field_bold(ShortHostname, Green),
-        text(" "),
-        field_fmt(Time, Blue, "[", "]"),
-        text(" "),
-        field_fmt(Cwd, White, "[", "]"),
-        if_git(GIT_BRACKET_GREEN),
-        lit("->", Blue),
-        text(" "),
-        lit_bold("$", Blue),
-    ],
+    segments: CANDY_SEGMENTS,
     rprompt: &[],
 };
 
@@ -163,14 +165,16 @@ const DALLAS: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: gallois.zsh-theme — uses vcs_info
-// [~/dir] [branch●]
+// Source: gallois.zsh-theme (also used by oldgallois)
+// [~/dir] $
+const GALLOIS_SEGMENTS: &[Segment] = &[
+    field_fmt(Cwd, Cyan, "[", "% ]"),
+    lit_bold("$", Green),
+];
+
 const GALLOIS: TemplateDef = TemplateDef {
     name: "gallois",
-    segments: &[
-        field_fmt(Cwd, Cyan, "[", "% ]"),
-        lit_bold("$", Green),
-    ],
+    segments: GALLOIS_SEGMENTS,
     rprompt: &[],
 };
 
@@ -475,23 +479,10 @@ const CLOUD: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: crcandy.zsh-theme (same git as candy)
-// user@host [HH:MM:SS] [~/dir] [branch *]-> $
+// Source: crcandy.zsh-theme — identical to candy
 const CRCANDY: TemplateDef = TemplateDef {
     name: "crcandy",
-    segments: &[
-        field_bold(User, Green),
-        lit_bold("@", Green),
-        field_bold(ShortHostname, Green),
-        text(" "),
-        field_fmt(Time, Blue, "[", "]"),
-        text(" "),
-        field_fmt(Cwd, White, "[", "]"),
-        if_git(GIT_BRACKET_GREEN),
-        lit("->", Blue),
-        text(" "),
-        lit_bold("$", Blue),
-    ],
+    segments: CANDY_SEGMENTS,
     rprompt: &[],
 };
 
@@ -651,11 +642,7 @@ const DST: TemplateDef = TemplateDef {
             dirty("", "!", Red, Red),
         ]),
     ],
-    rprompt: &[
-        lit("[", Green),
-        field(Time, Green),
-        lit("]", Green),
-    ],
+    rprompt: RPROMPT_TIME_BRACKET_GREEN,
 };
 
 // Source: dstufft.zsh-theme
@@ -733,12 +720,7 @@ const EDVARDM: TemplateDef = TemplateDef {
         lit_bold("➜", Red),
         text(" "),
         field(CwdBasename, White),
-        if_git(&[
-            text(" "),
-            lit("git:(", Red),
-            field(GitBranch, Red),
-            dirty(")", ") ✗", Blue, Yellow),
-        ]),
+        if_git(GIT_COLON_PAREN_RED),
         text(" "),
         lit_bold("%", Blue),
     ],
@@ -1606,29 +1588,25 @@ const LUKERANDALL: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: macovsky.zsh-theme
+// Source: macovsky.zsh-theme (also used by macovsky-ruby)
 // ~/dir ‹branch› $
+const MACOVSKY_SEGMENTS: &[Segment] = &[
+    field(Cwd, Green),
+    if_git(GIT_ANGLE_YELLOW),
+    text(" "),
+    lit_bold("$", White),
+];
+
 const MACOVSKY: TemplateDef = TemplateDef {
     name: "macovsky",
-    segments: &[
-        field(Cwd, Green),
-        if_git(GIT_ANGLE_YELLOW),
-        text(" "),
-        lit_bold("$", White),
-    ],
+    segments: MACOVSKY_SEGMENTS,
     rprompt: &[],
 };
 
-// Source: macovsky-ruby.zsh-theme — same as macovsky
-// ~/dir ‹branch› $
+// Source: macovsky-ruby.zsh-theme — identical to macovsky
 const MACOVSKY_RUBY: TemplateDef = TemplateDef {
     name: "macovsky-ruby",
-    segments: &[
-        field(Cwd, Green),
-        if_git(GIT_ANGLE_YELLOW),
-        text(" "),
-        lit_bold("$", White),
-    ],
+    segments: MACOVSKY_SEGMENTS,
     rprompt: &[],
 };
 
@@ -1952,14 +1930,11 @@ const OBRAUN: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: oldgallois.zsh-theme — git in RPROMPT
+// Source: oldgallois.zsh-theme — same prompt as gallois, git in RPROMPT
 // PROMPT: [~/dir] $    RPROMPT: [branch *]
 const OLDGALLOIS: TemplateDef = TemplateDef {
     name: "oldgallois",
-    segments: &[
-        field_fmt(Cwd, Cyan, "[", "% ]"),
-        lit_bold("$", Green),
-    ],
+    segments: GALLOIS_SEGMENTS,
     rprompt: &[
         if_git(&[
             lit("[", Green),
@@ -2504,52 +2479,33 @@ const THEUNRAVELER: TemplateDef = TemplateDef {
     rprompt: RPROMPT_GIT_THEUNRAVELER,
 };
 
-// Source: tjkirch.zsh-theme — multiline, space after colon
+// Source: tjkirch.zsh-theme (also used by tjkirch_mod)
 // user@host: ~/dir branch ⚡    RPROMPT: [HH:MM:SS] (green)
+const TJKIRCH_SEGMENTS: &[Segment] = &[
+    field(User, Magenta),
+    lit("@", White),
+    field(ShortHostname, Yellow),
+    lit(":", White),
+    text(" "),
+    field_bold(Cwd, Blue),
+    if_git(&[
+        text(" "),
+        field(GitBranch, Green),
+        dirty("", " ⚡", Green, Red),
+    ]),
+];
+
 const TJKIRCH: TemplateDef = TemplateDef {
     name: "tjkirch",
-    segments: &[
-        field(User, Magenta),
-        lit("@", White),
-        field(ShortHostname, Yellow),
-        lit(":", White),
-        text(" "),
-        field_bold(Cwd, Blue),
-        if_git(&[
-            text(" "),
-            field(GitBranch, Green),
-            dirty("", " ⚡", Green, Red),
-        ]),
-    ],
-    rprompt: &[
-        lit("[", Green),
-        field(Time, Green),
-        lit("]", Green),
-    ],
+    segments: TJKIRCH_SEGMENTS,
+    rprompt: RPROMPT_TIME_BRACKET_GREEN,
 };
 
-// Source: tjkirch_mod.zsh-theme — same as tjkirch but single-line, space after colon
-// user@host: ~/dir branch ⚡    RPROMPT: [HH:MM:SS] (green)
+// Source: tjkirch_mod.zsh-theme — identical to tjkirch
 const TJKIRCH_MOD: TemplateDef = TemplateDef {
     name: "tjkirch_mod",
-    segments: &[
-        field(User, Magenta),
-        lit("@", White),
-        field(ShortHostname, Yellow),
-        lit(":", White),
-        text(" "),
-        field_bold(Cwd, Blue),
-        if_git(&[
-            text(" "),
-            field(GitBranch, Green),
-            dirty("", " ⚡", Green, Red),
-        ]),
-    ],
-    rprompt: &[
-        lit("[", Green),
-        field(Time, Green),
-        lit("]", Green),
-    ],
+    segments: TJKIRCH_SEGMENTS,
+    rprompt: RPROMPT_TIME_BRACKET_GREEN,
 };
 
 // Source: tonotdo.zsh-theme — uses %n➜%3~, no space before »

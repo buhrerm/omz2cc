@@ -53,7 +53,7 @@ pub const GIT_COLON_PAREN_ROBBYRUSSELL: &[Segment] = &[
 ];
 
 /// git:(branch) ✗ — red variant (red git:(), red branch, yellow dirty)
-/// Used by: awesomepanda, edvardm, jispwoso, kafeitu, nebirhos, skaro
+/// Used by: awesomepanda, edvardm, jispwoso, skaro
 pub const GIT_COLON_PAREN_RED: &[Segment] = &[
     text(" "),
     lit("git:(", Red),
@@ -62,7 +62,7 @@ pub const GIT_COLON_PAREN_RED: &[Segment] = &[
 ];
 
 /// (branch●) — vcs_info style (magenta parens, green branch, red ● dirty)
-/// Used by: apple, emotty, jnrowe, kolo, linuxonly, trapd00r, zhann
+/// Used by: emotty, linuxonly, trapd00r
 pub const GIT_VCS_INFO: &[Segment] = &[
     text(" "),
     lit("(", Magenta),
@@ -106,25 +106,23 @@ pub const GIT_COLON_SORIN: &[Segment] = &[
 /// Used by: bira, gnzh, fino, fino-time
 pub const BOX_TOP: Segment = lit("╭─", Blue);
 
-/// user@host (bold green) — gentoo/lukerandall/linuxonly style
-/// Used by: gentoo, lukerandall, linuxonly
-#[allow(dead_code)]
-pub const USER_AT_HOST_GREEN_BOLD: &[Segment] = &[
-    field_bold(User, Green),
-    lit_bold("@", Green),
-    field_bold(ShortHostname, Green),
-];
 
 // ===========================================================================
 // RPROMPT components (for use in the rprompt field)
 // ===========================================================================
 
-/// [HH:MM:SS] — used by clean, dst, duellj, fletcherm, philips, pmcgee,
-/// tjkirch, tjkirch_mod, tonotdo
+/// [HH:MM:SS] white — used by clean, duellj, fletcherm, pmcgee
 pub const RPROMPT_TIME_BRACKET: &[Segment] = &[
     lit("[", White),
     field(Time, White),
     lit("]", White),
+];
+
+/// [HH:MM:SS] green — used by dst, tjkirch, tjkirch_mod
+pub const RPROMPT_TIME_BRACKET_GREEN: &[Segment] = &[
+    lit("[", Green),
+    field(Time, Green),
+    lit("]", Green),
 ];
 
 /// git:branch* (yellow) — arrow RPROMPT style
@@ -186,16 +184,6 @@ pub const RPROMPT_GIT_ITCHY: &[Segment] = &[
     ]),
 ];
 
-/// branch — plain, no dirty in prefix/suffix — fishy RPROMPT
-/// Used by: (currently unused, fishy's git_prompt_info has empty prefix/suffix)
-#[allow(dead_code)]
-pub const RPROMPT_GIT_FISHY: &[Segment] = &[
-    if_git(&[
-        text(" "),
-        field(GitBranch, White),
-    ]),
-];
-
 /// branch* ] 12:00 PM — nanotech RPROMPT (git + bracket + 12h time)
 /// Used by: nanotech
 pub const RPROMPT_NANOTECH: &[Segment] = &[
@@ -219,19 +207,6 @@ pub const RPROMPT_KARDAN: &[Segment] = &[
         dirty(")", "✗)", White, Yellow),
     ]),
     field(Hostname, White),
-];
-
-/// ‹git:branch ✘/✔› time — adben RPROMPT
-/// Used by: adben
-pub const RPROMPT_ADBEN: &[Segment] = &[
-    if_git(&[
-        lit("‹", Red),
-        field_fmt(GitBranch, Red, "git:", ""),
-        dirty(" ✔", " ✘", Green, Yellow),
-        lit("›", Red),
-        text(" "),
-    ]),
-    field(Time, Yellow),
 ];
 
 /// time ☁ branch ☂/☀ — wedisagree RPROMPT
@@ -259,11 +234,3 @@ pub const RPROMPT_TERMINALPARTY: &[Segment] = &[
     field_bold(ShortHostname, Blue),
 ];
 
-/// branch(*) — bold green, juanghurtado RPROMPT
-/// Used by: juanghurtado
-pub const RPROMPT_GIT_JUANGHURTADO: &[Segment] = &[
-    if_git(&[
-        field_bold(GitBranch, Green),
-        dirty("", "(*)", Green, Red),
-    ]),
-];
