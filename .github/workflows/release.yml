@@ -75,6 +75,17 @@ jobs:
       - name: Upgrade npm for OIDC trusted publishing
         run: npm install -g npm@latest
 
+      - name: Configure npm for OIDC (strip setup-node's token override)
+        run: |
+          # setup-node writes .npmrc with _authToken=${NODE_AUTH_TOKEN} and sets
+          # NODE_AUTH_TOKEN to the GitHub token (not an npm token). This overrides
+          # OIDC. Fix: keep the registry line, strip the token line, unset the var.
+          sed -i '/_authToken/d' ~/.npmrc
+          echo "--- .npmrc after cleanup ---"
+          cat ~/.npmrc
+          echo "--- npm config ---"
+          npm config list
+
       - name: Verify OIDC is available
         run: |
           echo "npm version: $(npm --version)"
@@ -111,6 +122,8 @@ jobs:
           done
 
       - name: Publish platform packages
+        env:
+          NODE_AUTH_TOKEN: ""
         run: |
           for dir in linux-x64-gnu linux-arm64-gnu darwin-x64 darwin-arm64; do
             echo "Publishing @omz2cc/$dir..."
@@ -120,6 +133,8 @@ jobs:
           done
 
       - name: Publish main package
+        env:
+          NODE_AUTH_TOKEN: ""
         run: |
           cd npm/omz2cc
           npm publish --access public --provenance
