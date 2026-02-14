@@ -13,6 +13,7 @@ pub enum FieldName {
     ShortHostname,
     Cwd,
     CwdBasename,
+    CwdTruncated(u8),
     GitBranch,
     Time,
     UserAtHost,
@@ -28,8 +29,10 @@ pub enum Segment {
     Field(FieldName, Color, bool, &'static str, &'static str),
     /// Conditional block: only rendered when inside a git repo
     IfGit(&'static [Segment]),
-    /// Clean/dirty symbol with respective colors
-    Dirty(&'static str, &'static str, Color, Color),
+    /// Conditional block: only rendered when NOT in a git repo
+    IfNotGit(&'static [Segment]),
+    /// Clean/dirty symbol with respective colors (clean_str, dirty_str, clean_color, dirty_color, clean_bold, dirty_bold)
+    Dirty(&'static str, &'static str, Color, Color, bool, bool),
 }
 
 // ---------------------------------------------------------------------------
@@ -78,13 +81,26 @@ pub const fn if_git(segs: &'static [Segment]) -> Segment {
     Segment::IfGit(segs)
 }
 
+pub const fn if_not_git(segs: &'static [Segment]) -> Segment {
+    Segment::IfNotGit(segs)
+}
+
 pub const fn dirty(
     clean: &'static str,
     dirty: &'static str,
     clean_color: Color,
     dirty_color: Color,
 ) -> Segment {
-    Segment::Dirty(clean, dirty, clean_color, dirty_color)
+    Segment::Dirty(clean, dirty, clean_color, dirty_color, false, false)
+}
+
+pub const fn dirty_bold(
+    clean: &'static str,
+    dirty: &'static str,
+    clean_color: Color,
+    dirty_color: Color,
+) -> Segment {
+    Segment::Dirty(clean, dirty, clean_color, dirty_color, true, true)
 }
 
 // ---------------------------------------------------------------------------
@@ -146,13 +162,23 @@ fn render_segments(segments: &[Segment], info: &StatusInfo, out: &mut String) {
                 }
             }
 
-            Segment::Dirty(clean, dirty_str, clean_color, dirty_color) => {
-                let (sym, c) = if info.git_dirty == Some(true) {
-                    (*dirty_str, dirty_color)
+            Segment::IfNotGit(segs) => {
+                if info.git_branch.is_none() {
+                    render_segments(segs, info, out);
+                }
+            }
+
+            Segment::Dirty(clean, dirty_str, clean_color, dirty_color, clean_bold, dirty_bold) => {
+                let (sym, c, is_bold) = if info.git_dirty == Some(true) {
+                    (*dirty_str, dirty_color, *dirty_bold)
                 } else {
-                    (*clean, clean_color)
+                    (*clean, clean_color, *clean_bold)
                 };
-                out.push_str(&color::colored(sym, *c));
+                if is_bold {
+                    out.push_str(&color::bold(sym, *c));
+                } else {
+                    out.push_str(&color::colored(sym, *c));
+                }
             }
         }
     }
@@ -165,6 +191,7 @@ fn resolve_field(name: &FieldName, info: &StatusInfo) -> String {
         FieldName::ShortHostname => info.short_hostname.clone(),
         FieldName::Cwd => info.cwd.clone(),
         FieldName::CwdBasename => info.cwd_basename.clone(),
+        FieldName::CwdTruncated(n) => info.cwd_truncated(*n),
         FieldName::GitBranch => info.git_branch.clone().unwrap_or_default(),
         FieldName::Time => info.time.clone(),
         FieldName::UserAtHost => format!("{}@{}", info.user, info.hostname),
