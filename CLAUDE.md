@@ -66,3 +66,9 @@ git worktree remove ../omz2cc-<branch-name>
 ```
 
 The worktree path pattern is always `../omz2cc-<branch-name>` (sibling to the main checkout).
+
+## Git / GitHub
+
+- `gh` CLI is **not available** — do not attempt to use it
+- PRs are created manually by the user; just push the branch
+- Push with `git push -u origin <branch>` and report the branch name
