@@ -14,8 +14,12 @@ pub enum FieldName {
     Cwd,
     CwdBasename,
     CwdTruncated(u8),
+    CwdAbsolute,
     GitBranch,
     Time,
+    TimeHHMM,
+    Time12h,
+    DateTime(&'static str),
     UserAtHost,
     HostColonCwd,
 }
@@ -271,9 +275,55 @@ fn resolve_field(name: &FieldName, info: &StatusInfo) -> String {
         FieldName::Cwd => info.cwd.clone(),
         FieldName::CwdBasename => info.cwd_basename.clone(),
         FieldName::CwdTruncated(n) => info.cwd_truncated(*n),
+        FieldName::CwdAbsolute => {
+            if info.cwd.starts_with('~') {
+                if let Ok(home) = std::env::var("HOME") {
+                    format!("{}{}", home, &info.cwd[1..])
+                } else {
+                    info.cwd.clone()
+                }
+            } else {
+                info.cwd.clone()
+            }
+        }
         FieldName::GitBranch => info.git_branch.clone().unwrap_or_default(),
         FieldName::Time => info.time.clone(),
+        FieldName::TimeHHMM => {
+            // Truncate HH:MM:SS to HH:MM
+            if info.time.len() >= 5 && info.time.as_bytes()[2] == b':' {
+                info.time[..5].to_string()
+            } else {
+                info.time.clone()
+            }
+        }
+        FieldName::Time12h => time_to_12h(&info.time),
+        FieldName::DateTime(fmt) => {
+            std::process::Command::new("date")
+                .arg(format!("+{}", fmt))
+                .output()
+                .ok()
+                .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+                .unwrap_or_else(|| info.time.clone())
+        }
         FieldName::UserAtHost => format!("{}@{}", info.user, info.hostname),
         FieldName::HostColonCwd => format!("{}:{}", info.hostname, info.cwd),
     }
+}
+
+/// Convert HH:MM:SS (24h) to "H:MM AM/PM" (12h) format.
+fn time_to_12h(time: &str) -> String {
+    let parts: Vec<&str> = time.split(':').collect();
+    if parts.len() >= 2 {
+        if let Ok(h) = parts[0].parse::<u32>() {
+            let m = parts[1];
+            let (h12, ampm) = match h {
+                0 => (12, "AM"),
+                1..=11 => (h, "AM"),
+                12 => (12, "PM"),
+                _ => (h - 12, "PM"),
+            };
+            return format!("{}:{} {}", h12, m, ampm);
+        }
+    }
+    time.to_string()
 }

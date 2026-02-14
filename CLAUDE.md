@@ -72,3 +72,50 @@ The worktree path pattern is always `../omz2cc-<branch-name>` (sibling to the ma
 - `gh` CLI is **not available** — do not attempt to use it
 - PRs are created manually by the user; just push the branch
 - Push with `git push -u origin <branch>` and report the branch name
+
+## Verify Tool (`src/bin/verify.rs`)
+
+Run: `cargo run --bin verify` (or `cargo run --bin verify -- -v <theme>` for verbose)
+
+Parses reference .zsh-theme files from `~/.oh-my-zsh/themes/`, simulates output, compares against defs.rs.
+
+### Current state (feature/fix-themes2, worktree ../omz2cc-fix-themes2)
+
+103/142 PASS, 38 COMPLEX, 1 NOT_FOUND (random). Goal: get all 38 COMPLEX to PASS.
+
+### The COMPLEX gate (`detect_complexity`, ~line 495)
+
+`detect_complexity()` runs BEFORE parsing. If it returns true, the theme is skipped entirely. The gate has:
+- Generic checks: precmd+PROMPT-in-function, vcs_info, custom git functions
+- 16 hardcoded theme names in a `match` block (~line 543) that bail out early
+
+**To fix themes: remove them from the hardcoded block and fix whatever parser gap caused them to be added.**
+
+### 38 COMPLEX themes by fix needed
+
+**Remove hardcoded override (parser can already handle or needs small fix):**
+blinks, essembeh, dallas, funky, humza, mira, nebirhos, mlh, darkblood, jonathan, adben, junkfood, michelebologna, kardan, sunaku, rkj-repos
+
+**Add vcs_info simulation (10 themes):**
+apple, emotty, gentoo, half-life, jnrowe, kolo, mikeh, nicoulaj, steeef, zhann
+→ Simulate `${vcs_info_msg_0_}` in resolve_calls like git_prompt_info
+
+**Handle custom git functions (6 themes):**
+eastwood, gallois, mortalscumbag, oldgallois, peepcode, sunrise
+→ Simulate `$(git_custom_status)`, `$(git_prompt)`, `$(mygit)` in resolve_calls
+
+**Handle precmd (5 themes, hardest):**
+bureau, linuxonly, pygmalion-virtualenv, refined, simonoff, trapd00r
+→ Need to trace PROMPT through precmd function body
+
+### Parsing pipeline
+
+`preprocess → detect_complexity (GATE) → collect_vars → resolve_vars → strip_formatting → resolve_zsh_escapes → resolve_calls → normalize`
+
+### Test values
+
+user="user", host="host", cwd="~/test", branch="main", time="12:00:00"
+
+### Component extraction TODO
+
+Extract repeated defs.rs patterns to components.rs (box-drawing lines, user@host, git blocks).
