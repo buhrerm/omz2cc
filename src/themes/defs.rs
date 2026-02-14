@@ -14,6 +14,7 @@ use FieldName::*;
 
 // Source: ys.zsh-theme
 // # user @ host in ~/dir on git:branch x [HH:MM:SS]
+// $
 const YS: TemplateDef = TemplateDef {
     name: "ys",
     segments: &[
@@ -37,7 +38,7 @@ const YS: TemplateDef = TemplateDef {
         ]),
         text(" "),
         field_fmt(Time, White, "[", "]"),
-        text(" "),
+        NEWLINE,
         lit_bold("$", Red),
     ],
     rprompt: &[],
@@ -71,7 +72,7 @@ const AF_MAGIC: TemplateDef = TemplateDef {
             field(GitBranch, Color256(78)),
             dirty(")", "*)", Color256(75), Color256(214)),
         ]),
-        text(" "),
+        NEWLINE,
         lit("»", Color256(105)),
     ],
     rprompt: &[
@@ -94,7 +95,7 @@ const BIRA: TemplateDef = TemplateDef {
         text(" "),
         field_bold(Cwd, Blue),
         if_git(GIT_ANGLE_YELLOW_DIRTY_DOT),
-        text(" "),
+        NEWLINE,
         lit("╰─$", Blue),
     ],
     rprompt: &[],
@@ -377,8 +378,8 @@ const AVIT: TemplateDef = TemplateDef {
         if_git(&[
             field(GitBranch, Green),
             dirty(" ✔", " ✗", Green, Red),
-            text(" "),
         ]),
+        NEWLINE,
         lit("▶", White),
     ],
     rprompt: &[],
@@ -797,8 +798,8 @@ const FINO: TemplateDef = TemplateDef {
             field(GitBranch, Color256(255)),
             dirty("✔", "✘✘✘", Color256(40), Color256(202)),
         ]),
-        text(" "),
-        lit("╰─", Blue),
+        NEWLINE,
+        BOX_BOTTOM,
     ],
     rprompt: &[],
 };
@@ -827,8 +828,8 @@ const FINO_TIME: TemplateDef = TemplateDef {
         field(DateTime("%y-%m-%d"), White),
         text(" - "),
         field(Time, White),
-        text(" "),
-        lit("╰─", Blue),
+        NEWLINE,
+        BOX_BOTTOM,
     ],
     rprompt: &[],
 };
@@ -965,7 +966,7 @@ const FUNKY: TemplateDef = TemplateDef {
         lit("]─[", Blue),
         lit("1", White),
         lit("]", Blue),
-        text(" "),
+        NEWLINE,
         lit("╰─[", Blue),
         lit(":)", Green),
         lit(",", White),
@@ -1104,7 +1105,7 @@ const GNZH: TemplateDef = TemplateDef {
         text(" "),
         field_bold(Cwd, Blue),
         if_git(GIT_ANGLE_YELLOW),
-        text(" "),
+        NEWLINE,
         lit("╰─➤", Blue),
     ],
     rprompt: &[],
@@ -1310,7 +1311,7 @@ const JONATHAN: TemplateDef = TemplateDef {
         lit("@", Gray),
         field(ShortHostname, Green),
         lit(":tty)--", Gray),
-        text(" "),
+        NEWLINE,
         lit("--(", Blue),
         field(Time, Yellow),
         if_git(&[
@@ -1738,7 +1739,7 @@ const MIRA: TemplateDef = TemplateDef {
         text(" "),
         lit("‹›", Red),
         if_git(GIT_PAREN_YELLOW),
-        text(" "),
+        NEWLINE,
         lit("╰─$", Blue),
     ],
     rprompt: &[],
@@ -1762,7 +1763,8 @@ const MLH: TemplateDef = TemplateDef {
             text(" "),
             field(GitBranch, White),
         ]),
-        text("\n$ "),
+        NEWLINE,
+        text("$ "),
     ],
     rprompt: &[],
 };

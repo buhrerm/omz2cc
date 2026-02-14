@@ -37,6 +37,8 @@ pub enum Segment {
     IfNotGit(&'static [Segment]),
     /// Clean/dirty symbol with respective colors (clean_str, dirty_str, clean_color, dirty_color, clean_bold, dirty_bold)
     Dirty(&'static str, &'static str, Color, Color, bool, bool),
+    /// Line break for multi-line prompts
+    Newline,
 }
 
 // ---------------------------------------------------------------------------
@@ -107,6 +109,9 @@ pub const fn dirty_bold(
     Segment::Dirty(clean, dirty, clean_color, dirty_color, true, true)
 }
 
+/// Line break for multi-line prompts.
+pub const NEWLINE: Segment = Segment::Newline;
+
 // ---------------------------------------------------------------------------
 // TemplateDef — a theme defined purely as data
 // ---------------------------------------------------------------------------
@@ -130,22 +135,36 @@ impl Theme for TemplateDef {
             let mut rp = String::new();
             render_segments(self.rprompt, info, &mut rp);
             if !rp.is_empty() {
+                // For multi-line themes, attach RPROMPT to the first line
+                let (target, suffix) = if let Some(nl_pos) = out.find('\n') {
+                    let (first, rest) = out.split_at(nl_pos);
+                    (first.to_string(), Some(rest.to_string()))
+                } else {
+                    (out, None)
+                };
+
+                let mut result = target;
                 if let Some(width) = terminal_width() {
-                    let left_w = visible_width(&out);
+                    let left_w = visible_width(&result);
                     let right_w = visible_width(&rp);
-                    let needed = left_w + 1 + right_w; // 1 for minimum gap
+                    let needed = left_w + 1 + right_w;
                     if needed <= width {
                         let pad = width - left_w - right_w;
                         for _ in 0..pad {
-                            out.push(' ');
+                            result.push(' ');
                         }
                     } else {
-                        out.push(' ');
+                        result.push(' ');
                     }
                 } else {
-                    out.push(' ');
+                    result.push(' ');
                 }
-                out.push_str(&rp);
+                result.push_str(&rp);
+
+                if let Some(rest) = suffix {
+                    result.push_str(&rest);
+                }
+                out = result;
             }
         }
         out
@@ -194,6 +213,8 @@ fn render_segments(segments: &[Segment], info: &StatusInfo, out: &mut String) {
                     render_segments(segs, info, out);
                 }
             }
+
+            Segment::Newline => out.push('\n'),
 
             Segment::Dirty(clean, dirty_str, clean_color, dirty_color, clean_bold, dirty_bold) => {
                 let (sym, c, is_bold) = if info.git_dirty == Some(true) {

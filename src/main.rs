@@ -29,6 +29,10 @@ struct Cli {
     #[arg(long)]
     no_stdin: bool,
 
+    /// Enable multi-line output for themes with multiple lines
+    #[arg(short, long)]
+    multiline: bool,
+
     /// Initialize default mappings config at ~/.config/omz2cc/mappings.conf
     #[arg(long)]
     init: bool,
@@ -77,7 +81,12 @@ fn main() {
 
     let mut info = StatusInfo::gather();
     info.apply_overrides(&all_overrides, &stdin_data);
-    println!("{}", theme.format(&info));
+    let output = theme.format(&info);
+    if cli.multiline {
+        println!("{}", output);
+    } else if let Some(first_line) = output.split('\n').next() {
+        println!("{}", first_line);
+    }
 }
 
 /// Parse ~/.zshrc to find the last ZSH_THEME="..." assignment

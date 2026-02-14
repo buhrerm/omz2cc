@@ -29,6 +29,10 @@ Theme detection order: `--theme` flag > `$ZSH_THEME` env var > last `ZSH_THEME=`
 
 Themes are defined as data in `src/themes/defs.rs` using a template DSL (`src/themes/template.rs`). Complex themes that need logic beyond the DSL can use manual Rust implementations (see `src/themes/agnoster.rs` as an example).
 
+### Multi-line themes
+
+Many themes (ys, bira, af-magic, gnzh, fino, fino-time, avit, jonathan, funky, mira, mlh) are two-line prompts in oh-my-zsh. These use the `NEWLINE` segment in their definitions to mark the line break. By default, only the first line (info) is shown and the second line (prompt char like `$`, `╰─$`) is dropped. Pass `--multiline` / `-m` to output both lines.
+
 ## Field Overrides (--set)
 
 Override any theme field with `--set key=value`. Special values:

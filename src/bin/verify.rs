@@ -63,6 +63,7 @@ fn render_visible(segments: &[Segment], info: &StatusInfo) -> String {
                     out.push_str(&render_visible(segs, info));
                 }
             }
+            Segment::Newline => out.push('\n'),
             Segment::Dirty(clean, dirty_str, _, _, _, _) => {
                 if info.git_dirty == Some(true) {
                     out.push_str(dirty_str);
