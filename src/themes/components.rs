@@ -209,7 +209,7 @@ pub const RPROMPT_NANOTECH: &[Segment] = &[
     field(Time12h, Green),
 ];
 
-/// ~/dir(branch✗)@host — kardan RPROMPT
+/// ~/dir(branch✗)host — kardan RPROMPT
 /// Used by: kardan
 pub const RPROMPT_KARDAN: &[Segment] = &[
     field(Cwd, White),
@@ -218,7 +218,6 @@ pub const RPROMPT_KARDAN: &[Segment] = &[
         field(GitBranch, White),
         dirty(")", "✗)", White, Yellow),
     ]),
-    lit("@", White),
     field(Hostname, White),
 ];
 

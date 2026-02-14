@@ -98,12 +98,18 @@ fn resolve_field(name: &FieldName, info: &StatusInfo) -> String {
                 .replace("%A", "Friday")
                 .replace("%b", "Feb")
                 .replace("%B", "February")
+                .replace("%R", "12:00")
+                .replace("%T", "12:00:00")
+                .replace("%X", "12:00:00")
                 .replace("%H", "12")
                 .replace("%I", "12")
+                .replace("%l", "12")
                 .replace("%M", "00")
                 .replace("%S", "00")
                 .replace("%p", "PM")
                 .replace("%P", "pm")
+                .replace("%D", "02/14/26")
+                .replace("%W", "02/14/26")
         }
         FieldName::UserAtHost => format!("{}@{}", info.user, info.hostname),
         FieldName::HostColonCwd => format!("{}:{}", info.hostname, info.cwd),
@@ -170,6 +176,7 @@ fn collect_vars(content: &str) -> HashMap<String, String> {
             || line.starts_with('#')
             || line.starts_with("if ")
             || line.starts_with("else")
+            || line.starts_with("elif")
             || line.starts_with("fi")
             || line.starts_with("function ")
             || line.ends_with("() {")
@@ -335,9 +342,13 @@ fn extract_ansi_c_string(rhs: &str, remaining: &[&str]) -> (String, usize) {
                 pos = s.len();
             }
         } else {
-            // Plain text between quoted blocks
-            result.push(s.as_bytes()[pos] as char);
-            pos += 1;
+            // Plain text between quoted blocks — advance by one char (UTF-8 safe)
+            if let Some(ch) = s[pos..].chars().next() {
+                result.push(ch);
+                pos += ch.len_utf8();
+            } else {
+                break;
+            }
         }
     }
 
@@ -345,47 +356,133 @@ fn extract_ansi_c_string(rhs: &str, remaining: &[&str]) -> (String, usize) {
 }
 
 fn extract_double_quoted(rhs: &str, remaining: &[&str]) -> (String, usize) {
-    let inner_start = 1; // skip "
+    // Handle concatenated quoted blocks: "..."'...'"..."$'...'
     let mut s = rhs.to_string();
     let mut extra = 0;
+    let mut result = String::new();
+    let mut pos = 0;
 
     loop {
-        if let Some(end) = find_unescaped_double_quote(&s[inner_start..]) {
-            let inner = &s[inner_start..inner_start + end];
-            // Unescape \$ → $ and \\ → \ in double-quoted strings
-            let unescaped = inner.replace("\\$", "$").replace("\\\\", "\\");
-            return (unescaped, extra);
+        if pos >= s.len() {
+            break;
         }
-        if extra < remaining.len() {
-            s.push('\n');
-            s.push_str(remaining[extra]);
-            extra += 1;
+
+        if s[pos..].starts_with('"') {
+            // Double-quoted block
+            let inner_start = pos + 1;
+            loop {
+                if let Some(end) = find_unescaped_double_quote(&s[inner_start..]) {
+                    let inner = &s[inner_start..inner_start + end];
+                    result.push_str(&inner.replace("\\$", "$").replace("\\\\", "\\"));
+                    pos = inner_start + end + 1;
+                    break;
+                }
+                if extra < remaining.len() {
+                    s.push('\n');
+                    s.push_str(remaining[extra]);
+                    extra += 1;
+                } else {
+                    let inner = &s[inner_start..];
+                    result.push_str(&inner.replace("\\$", "$").replace("\\\\", "\\"));
+                    pos = s.len();
+                    break;
+                }
+            }
+        } else if s[pos..].starts_with('\'') {
+            // Single-quoted block concatenated
+            let inner_start = pos + 1;
+            if let Some(end) = s[inner_start..].find('\'') {
+                result.push_str(&s[inner_start..inner_start + end]);
+                pos = inner_start + end + 1;
+            } else {
+                result.push_str(&s[inner_start..]);
+                pos = s.len();
+            }
+        } else if s[pos..].starts_with("$'") {
+            // ANSI-C quoted block concatenated
+            let inner_start = pos + 2;
+            if let Some(end) = find_unescaped_quote(&s[inner_start..]) {
+                result.push_str(&resolve_ansi_c(&s[inner_start..inner_start + end]));
+                pos = inner_start + end + 1;
+            } else {
+                result.push_str(&s[inner_start..]);
+                pos = s.len();
+            }
         } else {
-            let inner = &s[inner_start..];
-            let unescaped = inner.replace("\\$", "$").replace("\\\\", "\\");
-            return (unescaped, extra);
+            // Whitespace or other — end of value
+            break;
         }
     }
+
+    (result, extra)
 }
 
 fn extract_single_quoted(rhs: &str, remaining: &[&str]) -> (String, usize) {
-    let inner_start = 1; // skip '
+    // Handle concatenated quoted blocks: '...'$var'...'"..."'...'
     let mut s = rhs.to_string();
     let mut extra = 0;
+    let mut result = String::new();
+    let mut pos = 0;
 
     loop {
-        if let Some(end) = s[inner_start..].find('\'') {
-            let inner = &s[inner_start..inner_start + end];
-            return (inner.to_string(), extra);
+        if pos >= s.len() {
+            break;
         }
-        if extra < remaining.len() {
-            s.push('\n');
-            s.push_str(remaining[extra]);
-            extra += 1;
+
+        if s[pos..].starts_with('\'') {
+            // Single-quoted block
+            let inner_start = pos + 1;
+            loop {
+                if let Some(end) = s[inner_start..].find('\'') {
+                    result.push_str(&s[inner_start..inner_start + end]);
+                    pos = inner_start + end + 1;
+                    break;
+                }
+                if extra < remaining.len() {
+                    s.push('\n');
+                    s.push_str(remaining[extra]);
+                    extra += 1;
+                } else {
+                    result.push_str(&s[inner_start..]);
+                    pos = s.len();
+                    break;
+                }
+            }
+        } else if s[pos..].starts_with('"') {
+            // Double-quoted block concatenated
+            let inner_start = pos + 1;
+            if let Some(end) = find_unescaped_double_quote(&s[inner_start..]) {
+                let inner = &s[inner_start..inner_start + end];
+                result.push_str(&inner.replace("\\$", "$").replace("\\\\", "\\"));
+                pos = inner_start + end + 1;
+            } else {
+                result.push_str(&s[inner_start..]);
+                pos = s.len();
+            }
+        } else if s[pos..].starts_with("$'") {
+            // ANSI-C quoted block concatenated
+            let inner_start = pos + 2;
+            if let Some(end) = find_unescaped_quote(&s[inner_start..]) {
+                result.push_str(&resolve_ansi_c(&s[inner_start..inner_start + end]));
+                pos = inner_start + end + 1;
+            } else {
+                result.push_str(&s[inner_start..]);
+                pos = s.len();
+            }
+        } else if s[pos..].starts_with('$') {
+            // Unquoted variable reference between quoted blocks
+            let rest = &s[pos..];
+            // Find end — next quote or end
+            let end = rest[1..].find(|c: char| c == '\'' || c == '"').map(|i| i + 1).unwrap_or(rest.len());
+            result.push_str(&rest[..end]);
+            pos += end;
         } else {
-            return (s[inner_start..].to_string(), extra);
+            // Whitespace or other — end of value
+            break;
         }
     }
+
+    (result, extra)
 }
 
 fn find_unescaped_quote(s: &str) -> Option<usize> {
@@ -489,6 +586,145 @@ fn resolve_ansi_c(s: &str) -> String {
 }
 
 // ===========================================================================
+// Phase 2b: vcs_info format parsing
+// ===========================================================================
+
+/// Parse zstyle ':vcs_info:*' formats from theme content and produce
+/// the visible text that ${vcs_info_msg_0_} would resolve to.
+/// vcs_info format codes: %b=branch, %c=staged, %u=unstaged, %a=action, %s=vcs name
+fn parse_vcs_info_format(content: &str) -> String {
+    let (msg0, _) = parse_vcs_info_formats(content);
+    msg0
+}
+
+/// Parse vcs_info format strings from theme content.
+/// Returns (msg_0, msg_1) for the primary and secondary vcs_info messages.
+fn parse_vcs_info_formats(content: &str) -> (String, String) {
+    // Look for: zstyle ':vcs_info:*' formats '...' ['...']
+    // or:       zstyle ':vcs_info:git:*' formats '...'
+    let mut format_args: Vec<String> = Vec::new();
+    let mut unstaged_str = String::new();
+    let mut staged_str = String::new();
+
+    // Also handle formats set inside precmd functions (e.g. kolo/zhann)
+    for line in content.lines() {
+        let trimmed = line.trim();
+        if trimmed.contains("zstyle") && trimmed.contains("formats") && !trimmed.contains("actionformats") {
+            // Skip nvcsformats (non-VCS format)
+            if trimmed.contains("nvcsformats") {
+                continue;
+            }
+            // Prefer git-specific over generic
+            if trimmed.contains(":vcs_info:git:") || format_args.is_empty() {
+                // Extract all quoted args after 'formats'
+                if let Some(fmt_pos) = trimmed.find("formats") {
+                    let after = &trimmed[fmt_pos + 7..]; // after "formats"
+                    let args = extract_quoted_args(after);
+                    if !args.is_empty() {
+                        format_args = args;
+                    }
+                }
+            }
+        }
+        if trimmed.contains("zstyle") && trimmed.contains("unstagedstr") {
+            if let Some(val) = extract_last_quoted_arg(trimmed) {
+                unstaged_str = val;
+            }
+        }
+        if trimmed.contains("zstyle") && trimmed.contains("stagedstr") {
+            if let Some(val) = extract_last_quoted_arg(trimmed) {
+                staged_str = val;
+            }
+        }
+    }
+
+    if format_args.is_empty() {
+        // Default vcs_info format: just branch name
+        return ("main".to_string(), String::new());
+    }
+
+    // Look for hook_com[misc] value from +vi-untracked-git or similar hooks
+    let mut misc_str = String::new();
+    for line in content.lines() {
+        let trimmed = line.trim();
+        if trimmed.contains("hook_com[misc]") && trimmed.contains("=") {
+            if let Some(val) = extract_last_quoted_arg(trimmed) {
+                misc_str = val;
+            }
+        }
+    }
+
+    let resolve_vcs_fmt = |fmt: &str| -> String {
+        let resolved = fmt
+            .replace("%b", "main")
+            .replace("%c", &staged_str)
+            .replace("%u", &unstaged_str)
+            .replace("%m", &misc_str)
+            .replace("%a", "")
+            .replace("%s", "git")
+            .replace("%S", "")
+            .replace("%i", "")
+            .replace("%r", "repo")
+            .replace("%R", "/home/user/repo");
+        let stripped = strip_formatting(&resolved);
+        normalize(&resolve_zsh_escapes(&stripped))
+    };
+
+    let msg0 = resolve_vcs_fmt(&format_args[0]);
+    let msg1 = if format_args.len() > 1 {
+        resolve_vcs_fmt(&format_args[1])
+    } else {
+        String::new()
+    };
+
+    (msg0, msg1)
+}
+
+fn extract_last_quoted_arg(line: &str) -> Option<String> {
+    // Find the last single-quoted string in the line
+    let mut last = None;
+    let mut i = 0;
+    let chars: Vec<char> = line.chars().collect();
+    while i < chars.len() {
+        if chars[i] == '\'' {
+            let start = i + 1;
+            i += 1;
+            while i < chars.len() && chars[i] != '\'' {
+                i += 1;
+            }
+            if i < chars.len() {
+                last = Some(chars[start..i].iter().collect::<String>());
+            }
+        }
+        i += 1;
+    }
+    last
+}
+
+/// Extract all quoted args from a zstyle formats line.
+/// Returns a Vec of strings, one per quoted arg.
+fn extract_quoted_args(line: &str) -> Vec<String> {
+    let mut args = Vec::new();
+    let mut i = 0;
+    let chars: Vec<char> = line.chars().collect();
+    while i < chars.len() {
+        if chars[i] == '\'' || chars[i] == '"' {
+            let delim = chars[i];
+            let start = i + 1;
+            i += 1;
+            while i < chars.len() && chars[i] != delim {
+                i += 1;
+            }
+            if i < chars.len() {
+                args.push(chars[start..i].iter().collect::<String>());
+            }
+        }
+        i += 1;
+    }
+    args
+}
+
+// ===========================================================================
 // Phase 3: Complexity detection
 // ===========================================================================
 
@@ -511,28 +747,8 @@ fn detect_complexity(name: &str, content: &str) -> (bool, String) {
         }
     }
 
-    // Themes that use vcs_info
-    if content.contains("vcs_info_msg_0_") || content.contains("vcs_info 'prompt'") {
-        return (true, "uses vcs_info".into());
-    }
-
-    // Themes with custom git functions (not the standard git_prompt_info)
-    let custom_git_funcs = [
-        "git_prompt()",
-        "git_custom_status()",
-        "_git_prompt()",
-        "bureau_git_prompt",
-        "git_time_since_commit",
-        "git_prompt_string()",
-    ];
-    for func in &custom_git_funcs {
-        if content.contains(func) {
-            // But if it also uses git_prompt_info, it's probably OK
-            if !content.contains("$(git_prompt_info)") || name == "peepcode" {
-                return (true, format!("custom git function: {}", func));
-            }
-        }
-    }
+    // vcs_info and custom git functions are now handled by the parser
+    // (resolve_calls simulates their output)
 
     // Themes where PROMPT is not found at all
     if !content.contains("PROMPT=") && !content.contains("PS1=") {
@@ -540,35 +756,14 @@ fn detect_complexity(name: &str, content: &str) -> (bool, String) {
     }
 
     // Themes with specific parser-unfriendly constructs
+    // NOTE: Only add themes here as a LAST RESORT. Prefer fixing the parser.
     match name {
-        // $'...' multi-line concatenation with git_prompt_status symbols
-        "sunaku" => return (true, "multi-line $'...' with git_prompt_status".into()),
-        // Uses /dev/%y (TTY device name) which we can't resolve
-        "darkblood" => return (true, "uses TTY device /dev/%y".into()),
-        // $CONTAINER_NAME env var prefix
-        "essembeh" => return (true, "uses $CONTAINER_NAME env var".into()),
-        // Zsh arithmetic for hostname color $[((#HOST))%6+1]
-        "michelebologna" => return (true, "zsh arithmetic for hostname color".into()),
-        // Complex date format with custom FG colors
-        "dallas" => return (true, "complex date + custom dirty format".into()),
-        // Custom format with date/time and FG colors parser can't handle
-        "junkfood" => return (true, "complex date/time format with $FG colors".into()),
-        // Complex box-drawing with %l (tty) and custom separators
-        "jonathan" => return (true, "complex box-drawing with TTY device".into()),
-        // custom function output: "greetings, earthling"
-        "humza" => return (true, "custom greeting function".into()),
-        // nvm/rvm version display ‹node-›
-        "mira" => return (true, "uses nvm/rvm version display".into()),
-        // Uses $USER/$HOST variables that resolve differently than %n/%m
-        "mlh" => return (true, "uses $USER/$HOST with custom resolution".into()),
-        // Complex multi-line PROMPT concatenation with $'...' escaping
-        "adben" => return (true, "complex multi-line prompt with $'...' escaping".into()),
-        // %(?,true,false) conditional parser can't handle nested %) escapes
-        "funky" => return (true, "%(?) conditional with nested %) escapes".into()),
-        // Uses rbenv/rvm shell functions for ruby version display
-        "nebirhos" => return (true, "uses rbenv/rvm shell functions".into()),
-        // Custom mygit() function instead of git_prompt_info
-        "rkj-repos" => return (true, "custom git function: mygit()".into()),
+        // emotty: depends on emotty plugin function and emoji hash — can't simulate
+        "emotty" => return (true, "requires emotty plugin".into()),
+        // michelebologna: uses $[((#HOST))%6+1] arithmetic for color selection — can't parse
+        "michelebologna" => return (true, "arithmetic hostname color selection".into()),
+        // half-life: vcs_info format set dynamically via variable inside precmd function
+        "half-life" => return (true, "dynamic vcs_info format in precmd".into()),
         _ => {}
     }
 
@@ -627,22 +822,42 @@ fn resolve_vars(s: &str, vars: &HashMap<String, String>, depth: u8) -> String {
                         || name.starts_with("$bg")
                     {
                         result.push_str(&format!("${{{}{}}}", name, rest));
+                    } else if name == "vcs_info_msg_0_" {
+                        // vcs_info output — placeholder, replaced later by resolve_calls
+                        result.push_str("$__VCS_INFO__");
                     } else if rest.starts_with(":+") {
                         // ${VAR:+replacement} — skip (usually virtualenv etc.)
                     } else if rest.starts_with(":-") {
+                        let default_val = &rest[2..];
                         if let Some(val) = vars.get(&name) {
-                            result.push_str(&resolve_vars(val, vars, depth + 1));
+                            // Avoid infinite recursion: if the value is self-referential, use default
+                            let self_ref = format!("${{{}", name);
+                            if val.contains(&self_ref) {
+                                result.push_str(&resolve_vars(default_val, vars, depth + 1));
+                            } else {
+                                result.push_str(&resolve_vars(val, vars, depth + 1));
+                            }
                         } else {
-                            result.push_str(&rest[2..]); // default value
+                            result.push_str(&resolve_vars(default_val, vars, depth + 1));
                         }
+                    } else if let Some(bracket_end) = rest.find("]:-") {
+                        // ${array[subscript]:-default} — use default (we can't resolve arrays)
+                        let default_val = &rest[bracket_end + 3..];
+                        result.push_str(&resolve_vars(default_val, vars, depth + 1));
                     } else if rest.starts_with("#refs/heads/") {
                         // ${ref#refs/heads/} — parameter expansion, skip
                     } else if rest.contains(':') && rest.contains("gs/") {
                         // ${var:gs/pattern/replacement} — skip
-                    } else if let Some(val) = vars.get(&name) {
-                        result.push_str(&resolve_vars(val, vars, depth + 1));
+                    } else if rest.is_empty() {
+                        if let Some(val) = vars.get(&name) {
+                            // Skip self-referential variables (e.g. RPROMPT="${RPROMPT}...")
+                            let self_ref = format!("${{{}}}", name);
+                            if !val.contains(&self_ref) {
+                                result.push_str(&resolve_vars(val, vars, depth + 1));
+                            }
+                        }
                     }
-                    // else: unknown ${VAR}, skip
+                    // else: unknown ${VAR...}, skip
                 }
                 Some(&'(') => {
                     // $(command) — keep for later call resolution
@@ -663,6 +878,12 @@ fn resolve_vars(s: &str, vars: &HashMap<String, String>, depth: u8) -> String {
                         result.push_str(&name);
                     } else if let Some(val) = vars.get(&name) {
                         result.push_str(&resolve_vars(val, vars, depth + 1));
+                    } else if name == "vcs_info_msg_0_" || name == "vcs_info_msg_1_" || name == "vcs_info_msg_2_" {
+                        result.push_str("$__VCS_INFO__");
+                    } else if name == "USER" {
+                        result.push_str("user");
+                    } else if name == "HOST" {
+                        result.push_str("host");
                     } else {
                         // Unknown variable — keep as $VAR for debugging
                         result.push('$');
@@ -1033,6 +1254,12 @@ fn resolve_zsh_escapes(s: &str) -> String {
                             }
                             fmt.push(c);
                         }
+                        // Strip surrounding quotes if present
+                        let fmt = if fmt.starts_with('"') && fmt.ends_with('"') {
+                            fmt[1..fmt.len()-1].to_string()
+                        } else {
+                            fmt
+                        };
                         let resolved = fmt
                             .replace("%H", "12")
                             .replace("%I", "12")
@@ -1087,6 +1314,11 @@ fn resolve_zsh_escapes(s: &str) -> String {
                     chars.next();
                     result.push_str("tty");
                 }
+                Some(&'y') => {
+                    chars.next();
+                    result.push_str("pts/0"); // TTY device name
+                }
+                // %! is handled above (history event number)
                 Some(&'N') | Some(&'i') => {
                     chars.next();
                     result.push_str("zsh");
@@ -1098,6 +1330,20 @@ fn resolve_zsh_escapes(s: &str) -> String {
                 Some(&'E') => {
                     chars.next();
                     // Clear to end of line — no visible output
+                }
+                // Formatting escapes (bold, standout, underline, fg/bg color) — no visible output
+                Some(&'B') | Some(&'b') | Some(&'S') | Some(&'s') | Some(&'U') | Some(&'u') | Some(&'f') | Some(&'k') => {
+                    chars.next();
+                }
+                Some(&'F') | Some(&'K') => {
+                    chars.next();
+                    // %F{color} or %K{color} — skip the {color} block
+                    if chars.peek() == Some(&'{') {
+                        chars.next();
+                        while let Some(c) = chars.next() {
+                            if c == '}' { break; }
+                        }
+                    }
                 }
                 Some(&'/') => {
                     chars.next();
@@ -1191,18 +1437,29 @@ fn resolve_zsh_escapes(s: &str) -> String {
 fn read_conditional(chars: &mut std::iter::Peekable<std::str::Chars>) -> String {
     let mut content = String::new();
     let mut depth = 1;
+    let mut prev_percent = false;
     while let Some(c) = chars.next() {
-        if c == '(' {
+        if prev_percent {
+            // %) is a literal ) inside conditionals, not a closing paren
+            content.push(c);
+            prev_percent = false;
+        } else if c == '%' {
+            content.push(c);
+            prev_percent = true;
+        } else if c == '(' {
             depth += 1;
             content.push(c);
+            prev_percent = false;
         } else if c == ')' {
             depth -= 1;
             if depth == 0 {
                 break;
             }
             content.push(c);
+            prev_percent = false;
         } else {
             content.push(c);
+            prev_percent = false;
         }
     }
     content
@@ -1268,26 +1525,43 @@ fn resolve_conditional(cond: &str) -> String {
         true // default: take true branch
     };
 
-    if take_true {
-        resolve_zsh_escapes(true_branch)
-    } else {
-        resolve_zsh_escapes(false_branch)
-    }
+    let branch = if take_true { true_branch } else { false_branch };
+    // %) is an escaped ) inside conditionals — resolve to literal )
+    let unescaped = branch.replace("%)", ")");
+    resolve_zsh_escapes(&unescaped)
 }
 
 // ===========================================================================
 // Phase 7: Resolve function calls
 // ===========================================================================
 
-fn resolve_calls(s: &str, git_prefix: &str, git_suffix: &str, git_dirty: &str) -> String {
+fn resolve_calls(s: &str, git_prefix: &str, git_suffix: &str, git_dirty: &str, vcs_info_text: &str) -> String {
     let mut result = s.to_string();
+
+    // $__VCS_INFO__ placeholder → resolved vcs_info output
+    result = result.replace("$__VCS_INFO__", vcs_info_text);
 
     // $(git_prompt_info) → prefix + branch + dirty + suffix
     let git_text = format!("{}main{}{}", git_prefix, git_dirty, git_suffix);
     result = result.replace("$(git_prompt_info)", &git_text);
 
+    // Custom git functions that produce similar output to git_prompt_info
+    // $(git_custom_status) — used by eastwood, gallois, oldgallois
+    result = result.replace("$(git_custom_status)", &git_text);
+    // $(git_prompt) — used by mortalscumbag, peepcode, sunrise
+    // Note: not the same as $(git_prompt_info)
+    if result.contains("$(git_prompt)") {
+        result = result.replace("$(git_prompt)", &git_text);
+    }
+    // $(mygit) — used by rkj-repos
+    result = result.replace("$(mygit)", &git_text);
+    // $(bureau_git_prompt) — used by bureau
+    result = result.replace("$(bureau_git_prompt)", &git_text);
+
     // $(parse_git_dirty) → dirty marker
     result = result.replace("$(parse_git_dirty)", git_dirty);
+    // $(git_current_branch) → branch name
+    result = result.replace("$(git_current_branch)", "main");
 
     // $(hg_prompt_info) → empty (we don't simulate hg)
     result = result.replace("$(hg_prompt_info)", "");
@@ -1308,9 +1582,44 @@ fn resolve_calls(s: &str, git_prefix: &str, git_suffix: &str, git_dirty: &str) -
         "$(tf_prompt_info)",
         "$(aws_prompt_info)",
         "$(rvm_gemset)",
+        "$(rbenv_prompt_info)",
+        "$(git_prompt_string)",
     ];
     for call in &empty_calls {
         result = result.replace(call, "");
+    }
+
+    // Handle theme-specific helper functions
+    // mlh theme: $(username) → user, $(device) → host, $(directory) → cwd, $(prompt_end) → $
+    if result.contains("$(username)") {
+        result = result.replace("$(username)", "user");
+    }
+    if result.contains("$(device)") {
+        result = result.replace("$(device)", "host");
+    }
+    if result.contains("$(directory)") {
+        result = result.replace("$(directory)", "~/test");
+    }
+    if result.contains("$(prompt_end)") {
+        result = result.replace("$(prompt_end)", "\n$");
+    }
+    if result.contains("$(exit_code)") {
+        result = result.replace("$(exit_code)", "");
+    }
+    if result.contains("$(current_time)") {
+        result = result.replace("$(current_time)", "");
+    }
+    // kardan: $(get_host) → hostname
+    if result.contains("$(get_host)") {
+        result = result.replace("$(get_host)", "host");
+    }
+    // humza/others: custom functions → empty
+    if result.contains("$(toon)") {
+        result = result.replace("$(toon)", "");
+    }
+    // michelebologna: custom git prompt
+    if result.contains("$(michelebologna_git_prompt)") {
+        result = result.replace("$(michelebologna_git_prompt)", &git_text);
     }
 
     // Handle remaining $(...) by removing them
@@ -1519,6 +1828,9 @@ fn parse_theme(name: &str, content: &str) -> ZshTheme {
     let git_dirty = gp("ZSH_THEME_GIT_PROMPT_DIRTY");
     let _git_clean = gp("ZSH_THEME_GIT_PROMPT_CLEAN");
 
+    // Parse vcs_info format if present
+    let vcs_info_text = parse_vcs_info_format(&processed);
+
     // Get PROMPT and RPROMPT raw values
     let prompt_raw = vars
         .get("PROMPT")
@@ -1527,12 +1839,24 @@ fn parse_theme(name: &str, content: &str) -> ZshTheme {
         .unwrap_or_default();
     let rprompt_raw = vars.get("RPROMPT").or_else(|| vars.get("RPS1")).cloned();
 
-    // Check where git is referenced
-    theme.prompt_has_git = prompt_raw.contains("git_prompt_info")
-        || prompt_raw.contains("git_prompt_short_sha");
+    // Check where git is referenced (includes vcs_info and custom git functions)
+    let has_git_ref = |s: &str| -> bool {
+        s.contains("git_prompt_info")
+            || s.contains("git_prompt_short_sha")
+            || s.contains("parse_git_dirty")
+            || s.contains("git_prompt_status")
+            || s.contains("git_current_branch")
+            || s.contains("vcs_info_msg_0_")
+            || s.contains("git_custom_status")
+            || s.contains("git_prompt()")
+            || s.contains("git_prompt)")  // $(git_prompt)
+            || s.contains("mygit")
+            || s.contains("bureau_git_prompt")
+            || s.contains("git_prompt_string")
+    };
+    theme.prompt_has_git = has_git_ref(&prompt_raw);
     if let Some(ref rp) = rprompt_raw {
-        theme.rprompt_has_git = rp.contains("git_prompt_info")
-            || rp.contains("git_prompt")
+        theme.rprompt_has_git = has_git_ref(rp)
             || rp.contains("git_time_since_commit");
     }
 
@@ -1540,12 +1864,12 @@ fn parse_theme(name: &str, content: &str) -> ZshTheme {
     let resolved = resolve_vars(&prompt_raw, &vars, 0);
     let stripped = strip_formatting(&resolved);
     let escaped = resolve_zsh_escapes(&stripped);
-    let final_text = resolve_calls(&escaped, &git_prefix, &git_suffix, &git_dirty);
+    let final_text = resolve_calls(&escaped, &git_prefix, &git_suffix, &git_dirty, &vcs_info_text);
     theme.prompt_visible = normalize(&final_text);
 
-    // Also check if variables reference git
+    // Also check if variables reference git (after var resolution)
     if !theme.prompt_has_git {
-        theme.prompt_has_git = resolved.contains("git_prompt_info");
+        theme.prompt_has_git = has_git_ref(&resolved);
     }
 
     // Process RPROMPT
@@ -1554,11 +1878,11 @@ fn parse_theme(name: &str, content: &str) -> ZshTheme {
         let resolved = resolve_vars(&rp, &vars, 0);
         let stripped = strip_formatting(&resolved);
         let escaped = resolve_zsh_escapes(&stripped);
-        let final_text = resolve_calls(&escaped, &git_prefix, &git_suffix, &git_dirty);
+        let final_text = resolve_calls(&escaped, &git_prefix, &git_suffix, &git_dirty, &vcs_info_text);
         theme.rprompt_visible = normalize(&final_text);
 
         if !theme.rprompt_has_git {
-            theme.rprompt_has_git = resolved.contains("git_prompt_info");
+            theme.rprompt_has_git = has_git_ref(&resolved);
         }
     }
 
