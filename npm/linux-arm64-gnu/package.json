@@ -8,5 +8,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/buhrerm/omz2cc.git"
-  }
+  },
+  "homepage": "https://github.com/buhrerm/omz2cc"
 }

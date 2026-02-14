@@ -21,5 +21,6 @@
     "oh-my-zsh",
     "status-line",
     "themes"
-  ]
+  ],
+  "homepage": "https://github.com/buhrerm/omz2cc"
 }
