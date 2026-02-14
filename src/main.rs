@@ -84,8 +84,8 @@ fn main() {
     let output = theme.format(&info);
     if cli.multiline {
         println!("{}", output);
-    } else {
-        println!("{}", output.replace('\n', " "));
+    } else if let Some(first_line) = output.split('\n').next() {
+        println!("{}", first_line);
     }
 }
 
