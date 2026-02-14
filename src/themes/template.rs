@@ -111,6 +111,7 @@ pub const fn dirty_bold(
 pub struct TemplateDef {
     pub name: &'static str,
     pub segments: &'static [Segment],
+    pub rprompt: &'static [Segment],
 }
 
 impl Theme for TemplateDef {
@@ -121,6 +122,28 @@ impl Theme for TemplateDef {
     fn format(&self, info: &StatusInfo) -> String {
         let mut out = String::with_capacity(128);
         render_segments(self.segments, info, &mut out);
+        if !self.rprompt.is_empty() {
+            let mut rp = String::new();
+            render_segments(self.rprompt, info, &mut rp);
+            if !rp.is_empty() {
+                if let Some(width) = terminal_width() {
+                    let left_w = visible_width(&out);
+                    let right_w = visible_width(&rp);
+                    let needed = left_w + 1 + right_w; // 1 for minimum gap
+                    if needed <= width {
+                        let pad = width - left_w - right_w;
+                        for _ in 0..pad {
+                            out.push(' ');
+                        }
+                    } else {
+                        out.push(' ');
+                    }
+                } else {
+                    out.push(' ');
+                }
+                out.push_str(&rp);
+            }
+        }
         out
     }
 }
@@ -182,6 +205,62 @@ fn render_segments(segments: &[Segment], info: &StatusInfo, out: &mut String) {
             }
         }
     }
+}
+
+// ---------------------------------------------------------------------------
+// Terminal / string width helpers
+// ---------------------------------------------------------------------------
+
+/// Get terminal width from COLUMNS env var or ioctl on stderr.
+fn terminal_width() -> Option<usize> {
+    if let Ok(cols) = std::env::var("COLUMNS") {
+        if let Ok(w) = cols.parse::<usize>() {
+            if w > 0 {
+                return Some(w);
+            }
+        }
+    }
+
+    #[cfg(unix)]
+    {
+        #[repr(C)]
+        struct Winsize {
+            ws_row: u16,
+            ws_col: u16,
+            ws_xpixel: u16,
+            ws_ypixel: u16,
+        }
+        extern "C" {
+            fn ioctl(fd: i32, request: u64, argp: *mut Winsize) -> i32;
+        }
+        unsafe {
+            let mut ws = std::mem::zeroed::<Winsize>();
+            // TIOCGWINSZ = 0x5413 on Linux
+            if ioctl(2, 0x5413, &mut ws) == 0 && ws.ws_col > 0 {
+                return Some(ws.ws_col as usize);
+            }
+        }
+    }
+
+    None
+}
+
+/// Calculate visible width of a string by stripping ANSI escape sequences.
+fn visible_width(s: &str) -> usize {
+    let mut width = 0;
+    let mut in_escape = false;
+    for c in s.chars() {
+        if in_escape {
+            if c == 'm' {
+                in_escape = false;
+            }
+        } else if c == '\x1b' {
+            in_escape = true;
+        } else {
+            width += 1;
+        }
+    }
+    width
 }
 
 fn resolve_field(name: &FieldName, info: &StatusInfo) -> String {

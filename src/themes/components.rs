@@ -105,3 +105,15 @@ pub const GIT_COLON_SORIN: &[Segment] = &[
 /// Box-drawing top line: ╭─ (bira/gnzh/fino style)
 /// Used by: bira, gnzh, fino, fino-time
 pub const BOX_TOP: Segment = lit("╭─", Blue);
+
+// ===========================================================================
+// RPROMPT components (for use in the rprompt field)
+// ===========================================================================
+
+/// [HH:MM:SS] — used by clean, dst, duellj, fletcherm, philips, pmcgee,
+/// tjkirch, tjkirch_mod, tonotdo
+pub const RPROMPT_TIME_BRACKET: &[Segment] = &[
+    lit("[", White),
+    field(Time, White),
+    lit("]", White),
+];
