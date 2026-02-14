@@ -88,6 +88,31 @@ impl StatusInfo {
         }
     }
 
+    /// Return the last `n` path components of cwd (like zsh's `%N~`).
+    /// If the path has fewer components, returns the full cwd.
+    pub fn cwd_truncated(&self, n: u8) -> String {
+        let n = n as usize;
+        if n == 0 {
+            return self.cwd.clone();
+        }
+        // Handle ~ prefix: split off ~ then count from right
+        let (prefix, path) = if self.cwd.starts_with('~') {
+            ("~", &self.cwd[1..])
+        } else {
+            ("", self.cwd.as_str())
+        };
+        let components: Vec<&str> = path.split('/').filter(|s| !s.is_empty()).collect();
+        if components.len() <= n {
+            return self.cwd.clone();
+        }
+        let truncated: Vec<&str> = components[components.len() - n..].to_vec();
+        if prefix == "~" && components.len() == n {
+            format!("~/{}", truncated.join("/"))
+        } else {
+            truncated.join("/")
+        }
+    }
+
     pub fn apply_overrides(&mut self, overrides: &[String], stdin: &Option<StdinData>) {
         for entry in overrides {
             if let Some((key, val)) = entry.split_once('=') {
