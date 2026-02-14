@@ -109,6 +109,10 @@ jobs:
           done
 
       - name: Publish platform packages
+        env:
+          # setup-node sets NODE_AUTH_TOKEN to github.token even without
+          # registry-url. This overrides OIDC. Clear it so npm uses OIDC.
+          NODE_AUTH_TOKEN: ""
         run: |
           for dir in linux-x64-gnu linux-arm64-gnu darwin-x64 darwin-arm64; do
             echo "Publishing @omz2cc/$dir..."
@@ -118,6 +122,8 @@ jobs:
           done
 
       - name: Publish main package
+        env:
+          NODE_AUTH_TOKEN: ""
         run: |
           cd npm/omz2cc
           npm publish --access public --provenance
