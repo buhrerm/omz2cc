@@ -48,12 +48,21 @@ Persistent field mappings can be set in `~/.config/omz2cc/mappings.conf`. Run `o
 
 ## Development Workflow
 
-**Always use git worktrees for feature work.** Every new feature branch gets its own worktree:
+> **MANDATORY: Use git worktrees for ALL feature work. Never commit feature changes directly on main. No exceptions.**
+
+Every new feature branch must get its own worktree. Do NOT edit files in the main worktree and commit to a feature branch — create the worktree FIRST, then do all work inside it.
 
 ```sh
+# 1. Create worktree + branch (from the main worktree)
 git worktree add ../omz2cc-<branch-name> -b feature/<branch-name> main
-# ... do work in ../omz2cc-<branch-name> ...
+
+# 2. Do ALL work inside the worktree directory
+#    Edit files, build, test — everything happens in ../omz2cc-<branch-name>/
+
+# 3. Commit, push, and create PR from the worktree
+
+# 4. Clean up after merge
 git worktree remove ../omz2cc-<branch-name>
 ```
 
-Do not develop features directly on main.
+The worktree path pattern is always `../omz2cc-<branch-name>` (sibling to the main checkout).
