@@ -68,13 +68,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          registry-url: "https://registry.npmjs.org"
 
-      - name: Upgrade npm for trusted publishing
-        run: npm install -g npm@latest
-
-      - name: Remove token auth so npm uses OIDC
-        run: sed -i '/_authToken/d' ~/.npmrc
+      - name: Configure npm for OIDC trusted publishing
+        run: |
+          npm install -g npm@latest
+          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
