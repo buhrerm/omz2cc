@@ -6,7 +6,6 @@ on:
       - "v*"
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
@@ -62,17 +61,29 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
+          registry-url: "https://registry.npmjs.org"
 
-      - name: Configure npm for OIDC trusted publishing
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest
+
+      - name: Verify OIDC is available
         run: |
-          npm install -g npm@latest
-          echo "registry=https://registry.npmjs.org/" > ~/.npmrc
+          echo "npm version: $(npm --version)"
+          if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]; then
+            echo "OIDC token endpoint available"
+          else
+            echo "ERROR: OIDC token endpoint not available"
+            exit 1
+          fi
 
       - name: Download all artifacts
         uses: actions/download-artifact@v4
