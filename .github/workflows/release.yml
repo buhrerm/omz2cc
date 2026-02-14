@@ -1,0 +1,109 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            npm-dir: linux-x64-gnu
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            npm-dir: linux-arm64-gnu
+            use-cross: true
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            npm-dir: darwin-x64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            npm-dir: darwin-arm64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install cross
+        if: matrix.use-cross
+        run: cargo install cross --git https://github.com/cross-rs/cross
+
+      - name: Build
+        run: |
+          if [ "${{ matrix.use-cross }}" = "true" ]; then
+            cross build --release --target ${{ matrix.target }}
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
+
+      - name: Copy binary to npm package
+        run: |
+          cp target/${{ matrix.target }}/release/omz2cc npm/${{ matrix.npm-dir }}/omz2cc
+          chmod +x npm/${{ matrix.npm-dir }}/omz2cc
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.npm-dir }}
+          path: npm/${{ matrix.npm-dir }}/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Sync versions and prepare packages
+        run: |
+          VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          echo "Publishing v$VERSION"
+
+          # Update all package.json versions
+          for dir in linux-x64-gnu linux-arm64-gnu darwin-x64 darwin-arm64; do
+            # Copy built binary into npm dir
+            cp artifacts/$dir/omz2cc npm/$dir/omz2cc
+            chmod +x npm/$dir/omz2cc
+            # Update version
+            sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" npm/$dir/package.json
+          done
+
+          # Update main package version and dependency versions
+          sed -i "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" npm/omz2cc/package.json
+          for dir in linux-x64-gnu linux-arm64-gnu darwin-x64 darwin-arm64; do
+            sed -i "s|\"@omz2cc/$dir\": \"[^\"]*\"|\"@omz2cc/$dir\": \"$VERSION\"|" npm/omz2cc/package.json
+          done
+
+      - name: Publish platform packages
+        run: |
+          for dir in linux-x64-gnu linux-arm64-gnu darwin-x64 darwin-arm64; do
+            echo "Publishing @omz2cc/$dir..."
+            cd npm/$dir
+            npm publish --access public --provenance
+            cd ../..
+          done
+
+      - name: Publish main package
+        run: |
+          cd npm/omz2cc
+          npm publish --access public --provenance

@@ -1,1 +1,4 @@
 /target
+npm/*/omz2cc
+npm/*/node_modules/
+npm/*/package-lock.json
