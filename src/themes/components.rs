@@ -108,6 +108,7 @@ pub const BOX_TOP: Segment = lit("╭─", Blue);
 
 /// user@host (bold green) — gentoo/lukerandall/linuxonly style
 /// Used by: gentoo, lukerandall, linuxonly
+#[allow(dead_code)]
 pub const USER_AT_HOST_GREEN_BOLD: &[Segment] = &[
     field_bold(User, Green),
     lit_bold("@", Green),
@@ -155,6 +156,7 @@ pub const RPROMPT_GIT_MRTAZZ: &[Segment] = &[
         field(GitBranch, Red),
         dirty(">", " ✗>", Green, Yellow),
     ]),
+    text("%"),
 ];
 
 /// [git:branch] ✔/✖ — bold blue brackets — frontcube RPROMPT
@@ -185,7 +187,8 @@ pub const RPROMPT_GIT_ITCHY: &[Segment] = &[
 ];
 
 /// branch — plain, no dirty in prefix/suffix — fishy RPROMPT
-/// Used by: fishy
+/// Used by: (currently unused, fishy's git_prompt_info has empty prefix/suffix)
+#[allow(dead_code)]
 pub const RPROMPT_GIT_FISHY: &[Segment] = &[
     if_git(&[
         text(" "),
@@ -203,7 +206,7 @@ pub const RPROMPT_NANOTECH: &[Segment] = &[
     text(" "),
     lit("]", Blue),
     text(" "),
-    field(Time, Green),
+    field(Time12h, Green),
 ];
 
 /// ~/dir(branch✗)@host — kardan RPROMPT
@@ -243,14 +246,15 @@ pub const RPROMPT_WEDISAGREE: &[Segment] = &[
     ]),
 ];
 
-/// %2~(branch⚡) host — terminalparty RPROMPT
+/// %2~ (branch ⚡) host — terminalparty RPROMPT
 /// Used by: terminalparty
 pub const RPROMPT_TERMINALPARTY: &[Segment] = &[
     field(CwdTruncated(2), White),
     if_git(&[
+        text(" "),
         lit("(", Yellow),
         field(GitBranch, Yellow),
-        dirty(")", "⚡)", Yellow, Red),
+        dirty(")", " ⚡)", Yellow, Red),
     ]),
     text(" "),
     field_bold(ShortHostname, Blue),
