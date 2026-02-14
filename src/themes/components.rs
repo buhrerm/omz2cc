@@ -106,6 +106,10 @@ pub const GIT_COLON_SORIN: &[Segment] = &[
 /// Used by: bira, gnzh, fino, fino-time
 pub const BOX_TOP: Segment = lit("╭─", Blue);
 
+/// Box-drawing bottom line: ╰─ (fino/fino-time style)
+/// Used by: fino, fino-time
+pub const BOX_BOTTOM: Segment = lit("╰─", Blue);
+
 
 // ===========================================================================
 // RPROMPT components (for use in the rprompt field)
