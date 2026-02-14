@@ -70,20 +70,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          # NOTE: Do NOT set registry-url here. It creates .npmrc with
-          # _authToken=${NODE_AUTH_TOKEN} pointing to the GitHub token,
-          # which overrides OIDC trusted publishing.
+          registry-url: "https://registry.npmjs.org"
 
       - name: Configure npm for OIDC trusted publishing
         run: |
-          npm install -g npm@latest
-          npm config set registry https://registry.npmjs.org/
-          echo "npm version: $(npm --version)"
-          echo "registry: $(npm config get registry)"
+          # Unset the GitHub token that setup-node injects — it's not an
+          # npm token and prevents OIDC from being used.
+          unset NODE_AUTH_TOKEN
+          # Remove _authToken line from any .npmrc so npm falls back to OIDC
+          find ~ -name .npmrc -exec sed -i '/_authToken/d' {} + 2>/dev/null || true
+          sed -i '/_authToken/d' .npmrc 2>/dev/null || true
+          echo "=== Debug: npm config ==="
+          npm config list
+          echo "=== Debug: .npmrc files ==="
+          cat ~/.npmrc 2>/dev/null || echo "no ~/.npmrc"
+          cat .npmrc 2>/dev/null || echo "no ./.npmrc"
+          echo "=== Debug: npm version ==="
+          npm --version
+          echo "=== Debug: OIDC ==="
           if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL}" ]; then
-            echo "OIDC token endpoint available"
+            echo "OIDC endpoint: available"
           else
-            echo "ERROR: OIDC token endpoint not available"
+            echo "ERROR: OIDC endpoint not available"
             exit 1
           fi
 
@@ -113,6 +121,8 @@ jobs:
           done
 
       - name: Publish platform packages
+        env:
+          NODE_AUTH_TOKEN: ""
         run: |
           for dir in linux-x64-gnu linux-arm64-gnu darwin-x64 darwin-arm64; do
             echo "Publishing @omz2cc/$dir..."
@@ -122,6 +132,8 @@ jobs:
           done
 
       - name: Publish main package
+        env:
+          NODE_AUTH_TOKEN: ""
         run: |
           cd npm/omz2cc
           npm publish --access public --provenance
