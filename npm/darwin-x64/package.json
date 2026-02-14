@@ -1,12 +1,12 @@
 {
   "name": "@omz2cc/darwin-x64",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "omz2cc binary for macOS x64",
   "license": "MIT",
   "os": ["darwin"],
   "cpu": ["x64"],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mikemcbride/omz2cc.git"
+    "url": "git+https://github.com/buhrerm/omz2cc.git"
   }
 }
