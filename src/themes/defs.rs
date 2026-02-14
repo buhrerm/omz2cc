@@ -223,8 +223,7 @@ const SOLIAH: TemplateDef = TemplateDef {
 };
 
 // Source: adben.zsh-theme
-// user@host ~/dir ‹git:branch ✘/✔›
-// (git is in RPROMPT, we append it)
+// PROMPT: user@host ~/dir    RPROMPT: ‹git:branch ✘/✔› time
 const ADBEN: TemplateDef = TemplateDef {
     name: "adben",
     segments: &[
@@ -233,15 +232,8 @@ const ADBEN: TemplateDef = TemplateDef {
         field(ShortHostname, Red),
         text(" "),
         field_bold(Cwd, Yellow),
-        if_git(&[
-            text(" "),
-            lit("‹", Red),
-            field_fmt(GitBranch, Red, "git:", ""),
-            dirty(" ✔", " ✘", Green, Yellow),
-            lit("›", Red),
-        ]),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_ADBEN,
 };
 
 // Source: afowler.zsh-theme
@@ -312,20 +304,15 @@ const APPLE: TemplateDef = TemplateDef {
 };
 
 // Source: arrow.zsh-theme
-// dir ➤  — git in RPROMPT: git:branch*
+// PROMPT: dir ➤    RPROMPT: git:branch*
 const ARROW: TemplateDef = TemplateDef {
     name: "arrow",
     segments: &[
         field(CwdBasename, Yellow),
-        if_git(&[
-            text(" "),
-            field_fmt(GitBranch, Yellow, "git:", ""),
-            dirty("", "*", Yellow, Yellow),
-        ]),
         text(" "),
         lit("➤", Yellow),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_ARROW,
 };
 
 // Source: aussiegeek.zsh-theme
@@ -417,7 +404,7 @@ const CANDY_KINGDOM: TemplateDef = TemplateDef {
 };
 
 // Source: clean.zsh-theme
-// user:dir/ (branch✗) [HH:MM:SS]
+// user:dir/ (branch✗) $ [HH:MM:SS]
 const CLEAN: TemplateDef = TemplateDef {
     name: "clean",
     segments: &[
@@ -431,12 +418,13 @@ const CLEAN: TemplateDef = TemplateDef {
             dirty("", "✗", Yellow, Red),
             lit_bold(")", Blue),
         ]),
+        text(" $"),
     ],
     rprompt: RPROMPT_TIME_BRACKET,
 };
 
 // Source: cloud.zsh-theme
-// ☁ dir [branch]⚡
+// ☁ dir [branch]⚡ %
 const CLOUD: TemplateDef = TemplateDef {
     name: "cloud",
     segments: &[
@@ -449,6 +437,7 @@ const CLOUD: TemplateDef = TemplateDef {
             field(GitBranch, Cyan),
             dirty("]", "] ⚡", Green, Yellow),
         ]),
+        lit_bold(" %", Blue),
     ],
     rprompt: &[],
 };
@@ -566,19 +555,20 @@ const DIETER: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: dogenpunk.zsh-theme — git in RPROMPT
-// user@host ~/dir (branch)
+// Source: dogenpunk.zsh-theme — complex: custom git_time_since_commit
+// host ॐ ~/dir:git@branch!) (simplified)
 const DOGENPUNK: TemplateDef = TemplateDef {
     name: "dogenpunk",
     segments: &[
-        field(User, Yellow),
-        lit("@", White),
-        field(ShortHostname, Green),
+        field(ShortHostname, Blue),
         text(" "),
-        field_bold(Cwd, Cyan),
+        lit_bold("ॐ", White),
+        text(" "),
+        field(Cwd, Cyan),
+        lit(":", White),
         if_git(&[
-            text(" "),
-            lit_bold("(", Green),
+            lit_bold("git", Green),
+            lit("@", White),
             field_bold(GitBranch, Black),
             dirty(")", "!)", Green, Red),
         ]),
@@ -652,16 +642,20 @@ const DSTUFFT: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: duellj.zsh-theme — no git in PROMPT (RPROMPT has time)
-// user@host:~/dir [HH:MM:SS]
+// Source: duellj.zsh-theme — box-drawing layout
+// PROMPT: ╭─[user@host] - [~/dir] - [!]    RPROMPT: [HH:MM:SS]
 const DUELLJ: TemplateDef = TemplateDef {
     name: "duellj",
     segments: &[
-        field(User, Green),
-        lit("@", White),
-        field(ShortHostname, Blue),
-        lit(":", White),
-        field_bold(Cwd, Yellow),
+        lit("┌─[", Blue),
+        field_bold(User, Green),
+        lit_bold("@", Blue),
+        field(ShortHostname, Cyan),
+        lit("]", Blue),
+        text(" - "),
+        lit("[", Blue),
+        field_bold(Cwd, White),
+        lit("]", Blue),
     ],
     rprompt: RPROMPT_TIME_BRACKET,
 };
@@ -796,24 +790,19 @@ const FINO_TIME: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: fishy.zsh-theme — git in RPROMPT
-// user@host ~/dir >
+// Source: fishy.zsh-theme
+// PROMPT: user@host dir>    RPROMPT: branch
 const FISHY: TemplateDef = TemplateDef {
     name: "fishy",
     segments: &[
         field(User, Green),
         lit("@", White),
-        field(ShortHostname, Green),
+        field(ShortHostname, White),
         text(" "),
-        field_bold(Cwd, Cyan),
-        if_git(&[
-            text(" "),
-            field(GitBranch, Green),
-        ]),
-        text(" "),
+        field(Cwd, Green),
         lit(">", White),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_FISHY,
 };
 
 // Source: flazz.zsh-theme
@@ -895,20 +884,16 @@ const FRISK: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: frontcube.zsh-theme — git in RPROMPT
-// ~/dir [git:branch] ✔/✖
+// Source: frontcube.zsh-theme
+// PROMPT: ~/dir ➞    RPROMPT: [git:branch] ✔/✖
 const FRONTCUBE: TemplateDef = TemplateDef {
     name: "frontcube",
     segments: &[
         field(Cwd, Gray),
-        if_git(&[
-            text(" "),
-            lit_bold("[", Blue),
-            field_fmt_bold(GitBranch, Blue, "git:", ""),
-            dirty("] ✔", "] ✖", Green, Red),
-        ]),
+        text(" "),
+        lit("➞", Green),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_FRONTCUBE,
 };
 
 // Source: funky.zsh-theme — no git
@@ -1056,22 +1041,21 @@ const GNZH: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: gozilla.zsh-theme — git status in RPROMPT
-// user@host ~/dir (branch)
+// Source: gozilla.zsh-theme — git_prompt_status in RPROMPT (simplified)
+// ➜ dir (branch) %
 const GOZILLA: TemplateDef = TemplateDef {
     name: "gozilla",
     segments: &[
-        field(User, Yellow),
-        lit("@", White),
-        field(ShortHostname, Green),
+        lit_bold("➜", Red),
         text(" "),
-        field_bold(Cwd, Cyan),
+        field(CwdBasename, Cyan),
         if_git(&[
             text(" "),
-            lit("(", White),
-            field(GitBranch, White),
-            lit(")", White),
+            lit_bold("(", Blue),
+            field_bold(GitBranch, Blue),
+            lit_bold(")", Blue),
         ]),
+        lit_bold(" %", Blue),
     ],
     rprompt: &[],
 };
@@ -1145,23 +1129,18 @@ const INTHELOOP: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: itchy.zsh-theme — git in RPROMPT
-// user@host ~/dir ✔/✗
+// Source: itchy.zsh-theme
+// PROMPT: user@host ~/dir    RPROMPT: branch ✗/✔
 const ITCHY: TemplateDef = TemplateDef {
     name: "itchy",
     segments: &[
         field(User, Cyan),
-        lit("@", White),
+        lit("@", Cyan),
         field(ShortHostname, Cyan),
         text(" "),
         field(Cwd, Yellow),
-        if_git(&[
-            text(" "),
-            field(GitBranch, White),
-            dirty(" ✔", " ✗", Green, Red),
-        ]),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_ITCHY,
 };
 
 // Source: jaischeema.zsh-theme
@@ -1303,27 +1282,21 @@ const JTRILEY: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: juanghurtado.zsh-theme — git in RPROMPT
-// [user@host] [~/dir] (branch)
+// Source: juanghurtado.zsh-theme
+// PROMPT: user@host:~/dir(*)    RPROMPT: branch(*)
 const JUANGHURTADO: TemplateDef = TemplateDef {
     name: "juanghurtado",
     segments: &[
-        lit("[", White),
-        field(User, Green),
+        field_bold(User, Green),
         lit("@", White),
-        field(ShortHostname, Green),
-        lit("]", White),
-        text(" "),
-        lit("[", White),
-        field_bold(Cwd, Blue),
-        lit("]", White),
+        field_bold(ShortHostname, Green),
+        lit(":", White),
+        field(Cwd, Yellow),
         if_git(&[
-            text(" "),
-            field_bold(GitBranch, Green),
-            dirty("", "(*)", Green, Green),
+            dirty("", "(*)", Green, Red),
         ]),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_JUANGHURTADO,
 };
 
 // Source: junkfood.zsh-theme
@@ -1359,22 +1332,14 @@ const KAFEITU: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: kardan.zsh-theme — git in RPROMPT
-// ~/dir git:(branch✗) @host
+// Source: kardan.zsh-theme
+// PROMPT: >    RPROMPT: ~/dir(branch✗)@host
 const KARDAN: TemplateDef = TemplateDef {
     name: "kardan",
     segments: &[
-        field(Cwd, White),
-        if_git(&[
-            text(" "),
-            lit("(", White),
-            field(GitBranch, White),
-            dirty(")", "✗)", White, Yellow),
-        ]),
-        lit("@", White),
-        field(ShortHostname, White),
+        lit(">", White),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_KARDAN,
 };
 
 // Source: kennethreitz.zsh-theme
@@ -1528,20 +1493,19 @@ const MGUTZ: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: mh.zsh-theme — git in RPROMPT
-// ~/dir (branch ✱)
+// Source: mh.zsh-theme
+// PROMPT: [user:~/dir]$    RPROMPT: (branch✱)
 const MH: TemplateDef = TemplateDef {
     name: "mh",
     segments: &[
-        field_bold(Cwd, Blue),
-        if_git(&[
-            text(" "),
-            lit("(", White),
-            field(GitBranch, White),
-            dirty(")", " ✱)", White, Red),
-        ]),
+        lit("[", White),
+        field_bold(User, White),
+        lit(":", White),
+        field(Cwd, Red),
+        lit("]", White),
+        text("$ "),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_MH,
 };
 
 // Source: michelebologna.zsh-theme
@@ -1672,23 +1636,17 @@ const MORTALSCUMBAG: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: mrtazz.zsh-theme — git in RPROMPT
-// user@host:~/dir <branch✗/✓>
+// Source: mrtazz.zsh-theme
+// PROMPT: host:dir:$    RPROMPT: <branch ✗> (bold green)
 const MRTAZZ: TemplateDef = TemplateDef {
     name: "mrtazz",
     segments: &[
-        field(User, Green),
-        lit("@", White),
-        field(ShortHostname, Green),
+        field_bold(ShortHostname, Red),
         lit(":", White),
-        field(Cwd, Cyan),
-        if_git(&[
-            text(" "),
-            field_fmt_bold(GitBranch, Green, "<", ""),
-            dirty(">", "✗>", Green, Yellow),
-        ]),
+        field(CwdBasename, Cyan),
+        lit(":", White),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_MRTAZZ,
 };
 
 // Source: murilasso.zsh-theme
@@ -1729,21 +1687,16 @@ const MUSE: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: nanotech.zsh-theme — git in RPROMPT
-// ▸ ~/dir branch* HH:MM:SS
+// Source: nanotech.zsh-theme
+// PROMPT: dir [    RPROMPT: branch* ] 12:00 PM
 const NANOTECH: TemplateDef = TemplateDef {
     name: "nanotech",
     segments: &[
-        lit("▸", Green),
+        field(CwdTruncated(2), Green),
         text(" "),
-        field(Cwd, Cyan),
-        if_git(&[
-            text(" "),
-            field(GitBranch, Yellow),
-            dirty("", "*", Yellow, Red),
-        ]),
+        lit("[", Blue),
     ],
-    rprompt: &[field(Time, White)],
+    rprompt: RPROMPT_NANOTECH,
 };
 
 // Source: nebirhos.zsh-theme
@@ -1836,22 +1789,19 @@ const OLDGALLOIS: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: peepcode.zsh-theme — git in RPROMPT
-// user in ~/dir
+// Source: peepcode.zsh-theme — custom git_prompt() function
+// PROMPT: ~/dir ☺    RPROMPT: branch ✗ (custom, simplified)
 const PEEPCODE: TemplateDef = TemplateDef {
     name: "peepcode",
     segments: &[
-        field_bold(User, Red),
-        text(" "),
-        lit("in", White),
-        text(" "),
-        field_bold(Cwd, Green),
+        field(Cwd, White),
+    ],
+    rprompt: &[
         if_git(&[
-            text(" "),
-            field(GitBranch, White),
+            field_bold(GitBranch, Gray),
+            dirty("", " ✗", Gray, Gray),
         ]),
     ],
-    rprompt: &[],
 };
 
 // Source: philips.zsh-theme
@@ -2294,40 +2244,24 @@ const TAKASHIYOSHIDA: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: terminalparty.zsh-theme — git in RPROMPT
-// user@host ~/dir (branch⚡)
+// Source: terminalparty.zsh-theme
+// PROMPT: %%    RPROMPT: dir(branch⚡) host
 const TERMINALPARTY: TemplateDef = TemplateDef {
     name: "terminalparty",
     segments: &[
-        field(User, Green),
-        lit("@", White),
-        field(ShortHostname, Yellow),
-        text(" "),
-        field(Cwd, White),
-        if_git(&[
-            text(" "),
-            lit("(", Yellow),
-            field(GitBranch, Yellow),
-            dirty(")", "⚡)", Yellow, Red),
-        ]),
+        lit("%%", Green),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_TERMINALPARTY,
 };
 
-// Source: theunraveler.zsh-theme — git in RPROMPT
-// ~/dir branch ➜
+// Source: theunraveler.zsh-theme
+// PROMPT: [dir]    RPROMPT: branch (magenta)
 const THEUNRAVELER: TemplateDef = TemplateDef {
     name: "theunraveler",
     segments: &[
-        field_bold(Cwd, Blue),
-        if_git(&[
-            text(" "),
-            field(GitBranch, Magenta),
-        ]),
-        text(" "),
-        lit("➜", Green),
+        field_fmt(CwdBasename, Magenta, "[", "]"),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_GIT_THEUNRAVELER,
 };
 
 // Source: tjkirch.zsh-theme
@@ -2395,20 +2329,14 @@ const TRAPD00R: TemplateDef = TemplateDef {
     rprompt: &[],
 };
 
-// Source: wedisagree.zsh-theme — complex: git in RPROMPT
-// ~/dir ☁ branch
+// Source: wedisagree.zsh-theme
+// PROMPT: [dir] (magenta)    RPROMPT: time ☁ branch ☂/☀
 const WEDISAGREE: TemplateDef = TemplateDef {
     name: "wedisagree",
     segments: &[
-        field_bold(Cwd, Cyan),
-        if_git(&[
-            text(" "),
-            lit("☁", Red),
-            text(" "),
-            field(GitBranch, Magenta),
-        ]),
+        field_fmt(CwdBasename, Magenta, "[", "]"),
     ],
-    rprompt: &[],
+    rprompt: RPROMPT_WEDISAGREE,
 };
 
 // Source: wezm.zsh-theme
