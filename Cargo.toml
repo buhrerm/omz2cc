@@ -1,6 +1,6 @@
 [package]
 name = "omz2cc"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "Bring your oh-my-zsh theme to Claude Code — 142 themes built in"
 
