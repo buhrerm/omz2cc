@@ -29,6 +29,18 @@ pub fn get_theme(name: &str) -> Option<Box<dyn Theme>> {
     manual_themes().into_iter().find(|t| t.name() == name)
 }
 
+pub fn all_theme_names() -> Vec<&'static str> {
+    let mut names: Vec<&'static str> = defs::TEMPLATES.iter().map(|t| t.name).collect();
+    for t in manual_themes() {
+        if !names.contains(&t.name()) {
+            names.push(t.name());
+        }
+    }
+    names.push("random");
+    names.sort();
+    names
+}
+
 pub fn all_themes() -> Vec<Box<dyn Theme>> {
     let mut themes: Vec<Box<dyn Theme>> = defs::TEMPLATES
         .iter()
