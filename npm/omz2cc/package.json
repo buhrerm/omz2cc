@@ -1,16 +1,16 @@
 {
   "name": "omz2cc",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "Bring your oh-my-zsh theme to Claude Code — 142 themes built in",
   "license": "MIT",
   "bin": {
     "omz2cc": "bin/omz2cc.js"
   },
   "optionalDependencies": {
-    "@omz2cc/linux-x64-gnu": "0.1.18",
-    "@omz2cc/linux-arm64-gnu": "0.1.18",
-    "@omz2cc/darwin-x64": "0.1.18",
-    "@omz2cc/darwin-arm64": "0.1.18"
+    "@omz2cc/linux-x64-gnu": "0.1.19",
+    "@omz2cc/linux-arm64-gnu": "0.1.19",
+    "@omz2cc/darwin-x64": "0.1.19",
+    "@omz2cc/darwin-arm64": "0.1.19"
   },
   "repository": {
     "type": "git",
