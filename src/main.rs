@@ -5,10 +5,11 @@ mod themes;
 
 use std::io::IsTerminal;
 
-use clap::Parser;
+use clap::{CommandFactory, Parser};
+use clap_complete::Shell;
 use config::{load_mappings, merge_mappings};
 use info::{StdinData, StatusInfo};
-use themes::{all_themes, get_theme};
+use themes::{all_theme_names, all_themes, get_theme};
 
 #[derive(Parser)]
 #[command(name = "omz2cc", about = "Oh My Zsh to Claude Code status line")]
@@ -36,10 +37,19 @@ struct Cli {
     /// Initialize default mappings config at ~/.config/omz2cc/mappings.conf
     #[arg(long)]
     init: bool,
+
+    /// Generate shell completions (bash, zsh, fish, elvish, powershell)
+    #[arg(long, value_name = "SHELL")]
+    completions: Option<Shell>,
 }
 
 fn main() {
     let cli = Cli::parse();
+
+    if let Some(shell) = cli.completions {
+        generate_completions(shell);
+        return;
+    }
 
     if cli.init {
         init_config();
@@ -107,6 +117,31 @@ fn detect_theme_from_zshrc() -> Option<String> {
         }
     }
     theme
+}
+
+fn generate_completions(shell: Shell) {
+    let cmd = Cli::command();
+    // Inject theme names as possible values for --theme
+    let theme_names = all_theme_names();
+    let possible: Vec<clap::builder::PossibleValue> = theme_names
+        .iter()
+        .map(|n| clap::builder::PossibleValue::new(*n))
+        .collect();
+    // Rebuild the command with theme possible values
+    let args: Vec<clap::Arg> = cmd
+        .get_arguments()
+        .map(|a| {
+            if a.get_id() == "theme" {
+                a.clone().value_parser(possible.clone())
+            } else {
+                a.clone()
+            }
+        })
+        .collect();
+    let mut cmd2 = clap::Command::new("omz2cc")
+        .about(cmd.get_about().cloned().unwrap_or_default())
+        .args(args);
+    clap_complete::generate(shell, &mut cmd2, "omz2cc", &mut std::io::stdout());
 }
 
 fn init_config() {
