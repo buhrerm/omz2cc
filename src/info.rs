@@ -12,7 +12,10 @@ pub struct StdinData {
 impl StdinData {
     pub fn read() -> Option<Self> {
         let mut input = String::new();
-        std::io::stdin().read_to_string(&mut input).ok()?;
+        std::io::stdin()
+            .take(1_000_000)
+            .read_to_string(&mut input)
+            .ok()?;
         if input.trim().is_empty() {
             return None;
         }
@@ -26,7 +29,8 @@ impl StdinData {
     }
 }
 
-/// Extract a string value from JSON by key (simple, no serde dependency)
+/// Extract a string value from JSON by key (simple, no serde dependency).
+/// Handles escaped quotes within string values.
 fn extract_json_string(json: &str, key: &str) -> Option<String> {
     let pattern = format!("\"{}\"", key);
     let idx = json.find(&pattern)?;
@@ -36,8 +40,35 @@ fn extract_json_string(json: &str, key: &str) -> Option<String> {
     let after_colon = after_colon.trim_start();
     // Expect opening quote
     let after_quote = after_colon.strip_prefix('"')?;
-    let end = after_quote.find('"')?;
-    Some(after_quote[..end].to_string())
+    // Find closing quote, skipping escaped quotes
+    let mut result = String::new();
+    let mut chars = after_quote.chars();
+    while let Some(ch) = chars.next() {
+        match ch {
+            '\\' => {
+                if let Some(escaped) = chars.next() {
+                    match escaped {
+                        '"' => result.push('"'),
+                        '\\' => result.push('\\'),
+                        'n' => result.push('\n'),
+                        'r' => result.push('\r'),
+                        't' => result.push('\t'),
+                        'b' => result.push('\u{08}'),
+                        'f' => result.push('\u{0C}'),
+                        '/' => result.push('/'),
+                        // \uXXXX intentionally unsupported — not needed for model fields
+                        _ => {
+                            result.push('\\');
+                            result.push(escaped);
+                        }
+                    }
+                }
+            }
+            '"' => return Some(result),
+            _ => result.push(ch),
+        }
+    }
+    None
 }
 
 pub struct StatusInfo {
@@ -300,4 +331,63 @@ fn current_time(fmt: &str) -> String {
         .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string());
 
     output.unwrap_or_else(|| String::from("00:00:00"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn json_extract_simple() {
+        let json = r#"{"id": "claude-opus-4-6"}"#;
+        assert_eq!(
+            extract_json_string(json, "id"),
+            Some("claude-opus-4-6".into())
+        );
+    }
+
+    #[test]
+    fn json_extract_second_field() {
+        let json = r#"{"id": "claude-opus-4-6", "display_name": "Claude"}"#;
+        assert_eq!(
+            extract_json_string(json, "display_name"),
+            Some("Claude".into())
+        );
+    }
+
+    #[test]
+    fn json_extract_escaped_quotes() {
+        let json = r#"{"name": "say \"hello\""}"#;
+        assert_eq!(
+            extract_json_string(json, "name"),
+            Some(r#"say "hello""#.into())
+        );
+    }
+
+    #[test]
+    fn json_extract_escaped_backslash() {
+        let json = r#"{"path": "C:\\Users\\test"}"#;
+        assert_eq!(
+            extract_json_string(json, "path"),
+            Some(r"C:\Users\test".into())
+        );
+    }
+
+    #[test]
+    fn json_extract_missing_key() {
+        let json = r#"{"id": "value"}"#;
+        assert_eq!(extract_json_string(json, "missing"), None);
+    }
+
+    #[test]
+    fn json_extract_unterminated_string() {
+        let json = r#"{"id": "unterminated}"#;
+        assert_eq!(extract_json_string(json, "id"), None);
+    }
+
+    #[test]
+    fn json_extract_empty_value() {
+        let json = r#"{"id": ""}"#;
+        assert_eq!(extract_json_string(json, "id"), Some(String::new()));
+    }
 }
