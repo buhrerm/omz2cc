@@ -12,7 +12,10 @@ pub struct StdinData {
 impl StdinData {
     pub fn read() -> Option<Self> {
         let mut input = String::new();
-        std::io::stdin().read_to_string(&mut input).ok()?;
+        std::io::stdin()
+            .take(1_000_000)
+            .read_to_string(&mut input)
+            .ok()?;
         if input.trim().is_empty() {
             return None;
         }
@@ -26,7 +29,8 @@ impl StdinData {
     }
 }
 
-/// Extract a string value from JSON by key (simple, no serde dependency)
+/// Extract a string value from JSON by key (simple, no serde dependency).
+/// Handles escaped quotes within string values.
 fn extract_json_string(json: &str, key: &str) -> Option<String> {
     let pattern = format!("\"{}\"", key);
     let idx = json.find(&pattern)?;
@@ -36,8 +40,31 @@ fn extract_json_string(json: &str, key: &str) -> Option<String> {
     let after_colon = after_colon.trim_start();
     // Expect opening quote
     let after_quote = after_colon.strip_prefix('"')?;
-    let end = after_quote.find('"')?;
-    Some(after_quote[..end].to_string())
+    // Find closing quote, skipping escaped quotes
+    let mut result = String::new();
+    let mut chars = after_quote.chars();
+    while let Some(ch) = chars.next() {
+        match ch {
+            '\\' => {
+                if let Some(escaped) = chars.next() {
+                    match escaped {
+                        '"' => result.push('"'),
+                        '\\' => result.push('\\'),
+                        'n' => result.push('\n'),
+                        't' => result.push('\t'),
+                        '/' => result.push('/'),
+                        _ => {
+                            result.push('\\');
+                            result.push(escaped);
+                        }
+                    }
+                }
+            }
+            '"' => return Some(result),
+            _ => result.push(ch),
+        }
+    }
+    None
 }
 
 pub struct StatusInfo {
