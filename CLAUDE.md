@@ -73,9 +73,8 @@ The worktree path pattern is always `../omz2cc-<branch-name>` (sibling to the ma
 
 ## Git / GitHub
 
-- `gh` CLI is **not available** — do not attempt to use it
-- PRs are created manually by the user; just push the branch
-- Push with `git push -u origin <branch>` and report the branch name
+- `gh` CLI **is available** — use it for creating PRs, reviewing PRs, and merging them
+- Push with `git push -u origin <branch>` then use `gh pr create`, `gh pr review`, `gh pr merge`
 
 ## Verify Tool (`src/bin/verify.rs`)
 
