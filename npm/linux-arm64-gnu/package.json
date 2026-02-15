@@ -1,6 +1,6 @@
 {
   "name": "@omz2cc/linux-arm64-gnu",
-  "version": "0.1.1",
+  "version": "0.1.18",
   "description": "omz2cc binary for Linux arm64 (glibc)",
   "license": "MIT",
   "os": ["linux"],
