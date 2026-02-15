@@ -76,6 +76,18 @@ The worktree path pattern is always `../omz2cc-<branch-name>` (sibling to the ma
 - `gh` CLI **is available** — use it for creating PRs, reviewing PRs, and merging them
 - Push with `git push -u origin <branch>` then use `gh pr create`, `gh pr review`, `gh pr merge`
 
+### Self-review PR workflow
+
+When asked to review a PR (including your own), follow this process:
+
+1. **Review**: Read the diff (`gh pr diff <N>`), check for correctness, edge cases, missing tests, style issues
+2. **Comment**: Post review findings as a PR comment (`gh pr comment <N> --body "..."`)
+   - Note: `gh pr review --request-changes` fails on your own PRs — use `gh pr comment` instead
+3. **Fix**: Address all review items in the worktree, commit, and push
+4. **Confirm**: Post a follow-up comment confirming all items are addressed
+5. **Merge**: `gh pr merge <N> --squash --delete-branch` (run from **main worktree**, not the feature worktree)
+6. **Clean up**: `git worktree remove ../omz2cc-<branch>` then `git pull` on main
+
 ## Verify Tool (`src/bin/verify.rs`)
 
 Run: `cargo run --bin verify` (or `cargo run --bin verify -- -v <theme>` for verbose)
